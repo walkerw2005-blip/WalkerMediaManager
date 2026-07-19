@@ -1,0 +1,26 @@
+<Page
+    x:Class="WalkerMediaManager.Views.UpdatesPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer>
+        <StackPanel Padding="32" Spacing="16" MaxWidth="800" HorizontalAlignment="Left">
+            <TextBlock Text="Application Updates" FontSize="30" FontWeight="SemiBold"/>
+            <TextBlock Text="Check GitHub Releases for a newer installer." Opacity="0.7"/>
+
+            <Border Padding="20" CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Installed version"/>
+                    <TextBlock x:Name="CurrentVersionText" FontSize="24" FontWeight="SemiBold"/>
+                </StackPanel>
+            </Border>
+
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <Button x:Name="CheckButton" Content="Check for Updates" Click="CheckButton_Click"/>
+                <Button x:Name="DownloadButton" Content="Download Update" Click="DownloadButton_Click" IsEnabled="False"/>
+            </StackPanel>
+
+            <ProgressRing x:Name="BusyRing" Width="32" Height="32" HorizontalAlignment="Left"/>
+            <InfoBar x:Name="StatusBar" IsOpen="False"/>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

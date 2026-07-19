@@ -1,0 +1,35 @@
+<Page
+    x:Class="WalkerMediaManager.Views.PlexSettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer>
+        <StackPanel Padding="32" Spacing="16" MaxWidth="900" HorizontalAlignment="Left">
+            <TextBlock Text="Plex Connection" FontSize="30" FontWeight="SemiBold"/>
+            <TextBlock Text="Connect directly to the Plex server on your local network." Opacity="0.7"/>
+
+            <TextBox x:Name="ServerUrlBox" Header="Plex server URL" PlaceholderText="http://192.168.1.100:32400"/>
+            <PasswordBox x:Name="TokenBox" Header="Plex token" PlaceholderText="Paste your X-Plex-Token"/>
+
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <Button x:Name="TestButton" Content="Test Connection" Click="TestButton_Click"/>
+                <Button Content="Save Settings" Click="SaveButton_Click"/>
+            </StackPanel>
+
+            <ProgressRing x:Name="BusyRing" IsActive="False" Width="32" Height="32" HorizontalAlignment="Left"/>
+            <InfoBar x:Name="StatusBar" IsOpen="False"/>
+
+            <TextBlock Text="Available Plex Libraries" FontSize="22" FontWeight="SemiBold" Margin="0,12,0,0"/>
+            <ListView x:Name="LibrariesList">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Padding="8" ColumnSpacing="16">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="140"/></Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Type}" Opacity="0.7"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

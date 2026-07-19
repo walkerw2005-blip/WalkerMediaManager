@@ -1,0 +1,70 @@
+name: Build Windows Installer
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore WalkerMediaManager.sln
+
+      - name: Publish self-contained app
+        shell: pwsh
+        run: |
+          $version = if ("${{ github.ref_type }}" -eq "tag") { "${{ github.ref_name }}".TrimStart('v') } else { "0.1.${{ github.run_number }}" }
+          dotnet publish WalkerMediaManager/WalkerMediaManager.csproj `
+            --configuration Release `
+            --runtime win-x64 `
+            --self-contained true `
+            --output publish/win-x64 `
+            -p:Version=$version `
+            -p:InformationalVersion=$version
+
+          @{ repository = "${{ github.repository }}"; channel = "stable" } |
+            ConvertTo-Json |
+            Set-Content -Encoding UTF8 publish/win-x64/update-channel.json
+
+          "APP_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Install Inno Setup
+        run: choco install innosetup --no-progress -y
+
+      - name: Build setup program
+        shell: pwsh
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" `
+            "/DAppVersion=$env:APP_VERSION" `
+            "Installer\WalkerMediaManager.iss"
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: WalkerMediaManager-Setup-${{ env.APP_VERSION }}
+          path: Installer/Output/WalkerMediaManagerSetup.exe
+          if-no-files-found: error
+
+      - name: Publish GitHub release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: Installer/Output/WalkerMediaManagerSetup.exe
+          generate_release_notes: true

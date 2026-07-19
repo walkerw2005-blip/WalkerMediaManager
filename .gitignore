@@ -1,0 +1,8 @@
+.vs/
+**/bin/
+**/obj/
+publish/
+Installer/Output/
+*.user
+*.suo
+*.nupkg
