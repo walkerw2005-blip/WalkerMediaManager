@@ -1,0 +1,41 @@
+<Window
+    x:Class="WalkerMediaManager.UI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WalkerMediaManager.UI"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="Walker Media Manager">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <StackPanel
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Spacing="12">
+
+            <FontIcon
+                Glyph="&#xE7FC;"
+                FontSize="72"
+                HorizontalAlignment="Center"/>
+
+            <TextBlock
+                Text="Walker Media Manager"
+                FontSize="36"
+                FontWeight="SemiBold"
+                HorizontalAlignment="Center"/>
+
+            <TextBlock
+                Text="Version 0.1 Alpha"
+                FontSize="20"
+                Opacity="0.75"
+                HorizontalAlignment="Center"/>
+
+            <TextBlock
+                Text="Building the future of media collection management."
+                FontSize="16"
+                Opacity="0.65"
+                HorizontalAlignment="Center"/>
+        </StackPanel>
+    </Grid>
+</Window>

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "WalkerMediaManager.UI (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "WalkerMediaManager.UI (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
