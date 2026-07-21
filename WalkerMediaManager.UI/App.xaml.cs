@@ -1,4 +1,8 @@
-﻿using Microsoft.UI.Xaml;
+﻿using WalkerMediaManager.UI.Data;
+using System;
+using Microsoft.UI.Xaml.Controls;
+using WalkerMediaManager.UI.Data;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
@@ -35,6 +39,8 @@ namespace WalkerMediaManager.UI
         public App()
         {
             InitializeComponent();
+
+            DatabaseService.Initialize();
         }
 
         /// <summary>
