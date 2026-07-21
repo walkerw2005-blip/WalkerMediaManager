@@ -3,39 +3,75 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:WalkerMediaManager.UI"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
     Title="Walker Media Manager">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <StackPanel
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Spacing="12">
+    <NavigationView
+        x:Name="MainNavigationView"
+        PaneTitle="Walker Media Manager"
+        PaneDisplayMode="Left"
+        IsBackButtonVisible="Collapsed"
+        IsSettingsVisible="True"
+        SelectionChanged="MainNavigationView_SelectionChanged">
 
-            <FontIcon
-                Glyph="&#xE7FC;"
-                FontSize="72"
-                HorizontalAlignment="Center"/>
+        <NavigationView.MenuItems>
+            <NavigationViewItem
+                Content="Dashboard"
+                Tag="dashboard"
+                IsSelected="True">
+                <NavigationViewItem.Icon>
+                    <SymbolIcon Symbol="Home" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
 
-            <TextBlock
-                Text="Walker Media Manager"
-                FontSize="36"
-                FontWeight="SemiBold"
-                HorizontalAlignment="Center"/>
+            <NavigationViewItem
+                Content="Smart Buy"
+                Tag="smartbuy">
+                <NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xE7BF;" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
 
-            <TextBlock
-                Text="Version 0.1 Alpha"
-                FontSize="20"
-                Opacity="0.75"
-                HorizontalAlignment="Center"/>
+            <NavigationViewItem
+                Content="Movies"
+                Tag="movies">
+                <NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xE714;" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
 
-            <TextBlock
-                Text="Building the future of media collection management."
-                FontSize="16"
-                Opacity="0.65"
-                HorizontalAlignment="Center"/>
-        </StackPanel>
-    </Grid>
+            <NavigationViewItem
+                Content="TV Shows"
+                Tag="tvshows">
+                <NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xE7F4;" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+
+            <NavigationViewItem
+                Content="Collections"
+                Tag="collections">
+                <NavigationViewItem.Icon>
+                    <SymbolIcon Symbol="Library" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+
+            <NavigationViewItem
+                Content="Wishlist"
+                Tag="wishlist">
+                <NavigationViewItem.Icon>
+                    <SymbolIcon Symbol="Favorite" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+
+            <NavigationViewItem
+                Content="Reports"
+                Tag="reports">
+                <NavigationViewItem.Icon>
+                    <SymbolIcon Symbol="Document" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+        </NavigationView.MenuItems>
+
+        <Frame x:Name="ContentFrame" />
+    </NavigationView>
 </Window>

@@ -1,0 +1,41 @@
+<Page
+    x:Class="WalkerMediaManager.UI.Views.CollectionsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Padding="40">
+        <StackPanel Spacing="12">
+            <TextBlock
+                Text="Collections"
+                Style="{ThemeResource TitleTextBlockStyle}" />
+
+            <TextBlock
+                Text="See collection progress and missing titles."
+                Style="{ThemeResource SubtitleTextBlockStyle}" />
+
+            <Border
+                Margin="0,24,0,0"
+                Padding="24"
+                CornerRadius="8"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1">
+
+                <StackPanel Spacing="8">
+                    <TextBlock
+                        Text="Welcome to Walker Media Manager"
+                        FontSize="24"
+                        FontWeight="SemiBold" />
+
+                    <TextBlock
+                        Text="The application shell is running successfully."
+                        TextWrapping="Wrap" />
+
+                    <TextBlock
+                        Text="Movies: 0   •   TV Series: 0   •   Collections: 0"
+                        Opacity="0.70" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </Grid>
+</Page>

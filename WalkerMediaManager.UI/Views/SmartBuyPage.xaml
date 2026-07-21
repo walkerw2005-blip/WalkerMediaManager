@@ -1,0 +1,17 @@
+<Page
+    x:Class="WalkerMediaManager.UI.Views.SmartBuyPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+	<Grid Padding="40">
+		<StackPanel Spacing="12">
+			<TextBlock
+                Text="Smart Buy"
+                Style="{ThemeResource TitleTextBlockStyle}" />
+
+			<TextBlock
+                Text="Search your collection before making a purchase."
+                Style="{ThemeResource SubtitleTextBlockStyle}" />
+		</StackPanel>
+	</Grid>
+</Page>

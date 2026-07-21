@@ -1,0 +1,17 @@
+<Page
+    x:Class="WalkerMediaManager.UI.Views.TvShowsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+	<Grid Padding="40">
+		<StackPanel Spacing="12">
+			<TextBlock
+                Text="TV Shows"
+                Style="{ThemeResource TitleTextBlockStyle}" />
+
+			<TextBlock
+                Text="Track series, seasons, and episodes."
+                Style="{ThemeResource SubtitleTextBlockStyle}" />
+		</StackPanel>
+	</Grid>
+</Page>
