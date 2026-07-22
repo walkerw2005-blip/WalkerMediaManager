@@ -8,6 +8,7 @@ namespace WalkerMediaManager.UI.Views;
 public sealed partial class DashboardPage : Page
 {
     private readonly MovieRepository _movieRepository = new();
+    private readonly TVShowRepository _tvShowRepository = new();
 
     public DashboardPage()
     {
@@ -20,11 +21,12 @@ public sealed partial class DashboardPage : Page
         base.OnNavigatedTo(e);
 
         int movieCount = await _movieRepository.CountAsync();
+        int tvShowCount = await _tvShowRepository.CountAsync();
 
         MovieCountText.Text = movieCount.ToString();
-
+        TvSeriesCountText.Text = tvShowCount.ToString();
         OwnedTitleCountText.Text =
-            (movieCount + 57).ToString();
+            (movieCount + tvShowCount).ToString();
     }
 
     private void OpenSmartBuy_Click(
