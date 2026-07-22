@@ -30,6 +30,7 @@
 
 			<StackPanel Spacing="16">
 				<TextBlock
+                    x:Name="FormTitleText"
                     Text="Add Movie"
                     FontSize="22"
                     FontWeight="SemiBold" />
@@ -65,6 +66,7 @@
 						<ColumnDefinition Width="*" />
 						<ColumnDefinition Width="*" />
 						<ColumnDefinition Width="Auto" />
+						<ColumnDefinition Width="Auto" />
 					</Grid.ColumnDefinitions>
 
 					<TextBox
@@ -79,11 +81,21 @@
                         PlaceholderText="Director name" />
 
 					<Button
+                        x:Name="SaveMovieButton"
                         Grid.Column="2"
                         Content="Add Movie"
                         Padding="24,10"
                         VerticalAlignment="Bottom"
-                        Click="AddMovie_Click" />
+                        Click="SaveMovie_Click" />
+
+					<Button
+                        x:Name="CancelEditButton"
+                        Grid.Column="3"
+                        Content="Cancel"
+                        Padding="18,10"
+                        VerticalAlignment="Bottom"
+                        Visibility="Collapsed"
+                        Click="CancelEdit_Click" />
 				</Grid>
 
 				<InfoBar
@@ -108,21 +120,30 @@
 			<ListView
                 x:Name="MoviesListView"
                 Grid.Row="1"
-                ItemsSource="{x:Bind Movies, Mode=OneWay}">
+                ItemsSource="{x:Bind Movies, Mode=OneWay}"
+                SelectionMode="None">
 
 				<ListView.ItemTemplate>
 					<DataTemplate>
 						<Grid Padding="12" ColumnSpacing="16">
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition Width="*" />
-								<ColumnDefinition Width="100" />
-								<ColumnDefinition Width="100" />
+								<ColumnDefinition Width="90" />
+								<ColumnDefinition Width="90" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
 							</Grid.ColumnDefinitions>
 
-							<TextBlock
-                                Text="{Binding Title}"
-                                FontSize="18"
-                                FontWeight="SemiBold" />
+							<StackPanel>
+								<TextBlock
+                                    Text="{Binding Title}"
+                                    FontSize="18"
+                                    FontWeight="SemiBold" />
+
+								<TextBlock
+                                    Text="{Binding Director}"
+                                    Opacity="0.65" />
+							</StackPanel>
 
 							<TextBlock
                                 Grid.Column="1"
@@ -133,6 +154,18 @@
                                 Grid.Column="2"
                                 Text="{Binding Rating}"
                                 VerticalAlignment="Center" />
+
+							<Button
+                                Grid.Column="3"
+                                Content="Edit"
+                                Tag="{Binding}"
+                                Click="EditMovie_Click" />
+
+							<Button
+                                Grid.Column="4"
+                                Content="Delete"
+                                Tag="{Binding}"
+                                Click="DeleteMovie_Click" />
 						</Grid>
 					</DataTemplate>
 				</ListView.ItemTemplate>

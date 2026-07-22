@@ -1,7 +1,7 @@
-﻿using Microsoft.Data.Sqlite;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Data.Sqlite;
 using WalkerMediaManager.UI.Data;
 using WalkerMediaManager.UI.Models;
 
@@ -99,21 +99,62 @@ public sealed class MovieRepository
             SELECT last_insert_rowid();
             """;
 
-        command.Parameters.AddWithValue("$title", movie.Title);
-        command.Parameters.AddWithValue("$releaseYear", movie.ReleaseYear);
-        command.Parameters.AddWithValue("$rating", movie.Rating);
-        command.Parameters.AddWithValue("$runtime", movie.Runtime);
-        command.Parameters.AddWithValue("$genre", movie.Genre);
-        command.Parameters.AddWithValue("$director", movie.Director);
-        command.Parameters.AddWithValue("$plexGuid", movie.PlexGuid);
-        command.Parameters.AddWithValue(
-            "$tmdbId",
-            movie.TMDbId is null ? DBNull.Value : movie.TMDbId.Value);
-        command.Parameters.AddWithValue("$imdbId", movie.IMDbId);
+        AddMovieParameters(command, movie);
 
         object? result = await command.ExecuteScalarAsync();
 
         return Convert.ToInt32(result);
+    }
+
+    public async Task UpdateAsync(Movie movie)
+    {
+        await using SqliteConnection connection =
+            new($"Data Source={DatabaseService.DatabasePath}");
+
+        await connection.OpenAsync();
+
+        await using SqliteCommand command = connection.CreateCommand();
+
+        command.CommandText =
+            """
+            UPDATE Movies
+            SET
+                Title = $title,
+                ReleaseYear = $releaseYear,
+                Rating = $rating,
+                Runtime = $runtime,
+                Genre = $genre,
+                Director = $director,
+                PlexGuid = $plexGuid,
+                TMDbId = $tmdbId,
+                IMDbId = $imdbId
+            WHERE Id = $id;
+            """;
+
+        AddMovieParameters(command, movie);
+        command.Parameters.AddWithValue("$id", movie.Id);
+
+        await command.ExecuteNonQueryAsync();
+    }
+
+    public async Task DeleteAsync(int movieId)
+    {
+        await using SqliteConnection connection =
+            new($"Data Source={DatabaseService.DatabasePath}");
+
+        await connection.OpenAsync();
+
+        await using SqliteCommand command = connection.CreateCommand();
+
+        command.CommandText =
+            """
+            DELETE FROM Movies
+            WHERE Id = $id;
+            """;
+
+        command.Parameters.AddWithValue("$id", movieId);
+
+        await command.ExecuteNonQueryAsync();
     }
 
     public async Task<int> CountAsync()
@@ -130,5 +171,22 @@ public sealed class MovieRepository
         object? result = await command.ExecuteScalarAsync();
 
         return Convert.ToInt32(result);
+    }
+
+    private static void AddMovieParameters(
+        SqliteCommand command,
+        Movie movie)
+    {
+        command.Parameters.AddWithValue("$title", movie.Title);
+        command.Parameters.AddWithValue("$releaseYear", movie.ReleaseYear);
+        command.Parameters.AddWithValue("$rating", movie.Rating);
+        command.Parameters.AddWithValue("$runtime", movie.Runtime);
+        command.Parameters.AddWithValue("$genre", movie.Genre);
+        command.Parameters.AddWithValue("$director", movie.Director);
+        command.Parameters.AddWithValue("$plexGuid", movie.PlexGuid);
+        command.Parameters.AddWithValue(
+            "$tmdbId",
+            movie.TMDbId is null ? DBNull.Value : movie.TMDbId.Value);
+        command.Parameters.AddWithValue("$imdbId", movie.IMDbId);
     }
 }

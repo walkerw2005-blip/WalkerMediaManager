@@ -91,7 +91,8 @@
                                 HorizontalAlignment="Left" />
 
 							<TextBlock
-                                Text="570"
+                                x:Name="MovieCountText"
+                                Text="0"
                                 FontSize="32"
                                 FontWeight="SemiBold" />
 
@@ -141,7 +142,8 @@
                                 HorizontalAlignment="Left" />
 
 							<TextBlock
-                                Text="627"
+                                x:Name="OwnedTitleCountText"
+                                Text="57"
                                 FontSize="32"
                                 FontWeight="SemiBold" />
 
@@ -207,9 +209,10 @@
 							</Grid.ColumnDefinitions>
 
 							<TextBlock Text="Local Database" />
+
 							<TextBlock
                                 Grid.Column="1"
-                                Text="Not configured"
+                                Text="Connected"
                                 Opacity="0.7" />
 						</Grid>
 
@@ -220,6 +223,7 @@
 							</Grid.ColumnDefinitions>
 
 							<TextBlock Text="Plex Server" />
+
 							<TextBlock
                                 Grid.Column="1"
                                 Text="Not connected"
@@ -233,6 +237,7 @@
 							</Grid.ColumnDefinitions>
 
 							<TextBlock Text="Metadata Provider" />
+
 							<TextBlock
                                 Grid.Column="1"
                                 Text="Not configured"
@@ -263,6 +268,7 @@
 							</Grid.ColumnDefinitions>
 
 							<TextBlock Text="Possible Duplicates" />
+
 							<TextBlock
                                 Grid.Column="1"
                                 Text="0"
@@ -276,6 +282,7 @@
 							</Grid.ColumnDefinitions>
 
 							<TextBlock Text="Incomplete Collections" />
+
 							<TextBlock
                                 Grid.Column="1"
                                 Text="0"
@@ -289,6 +296,7 @@
 							</Grid.ColumnDefinitions>
 
 							<TextBlock Text="Missing Metadata" />
+
 							<TextBlock
                                 Grid.Column="1"
                                 Text="0"
