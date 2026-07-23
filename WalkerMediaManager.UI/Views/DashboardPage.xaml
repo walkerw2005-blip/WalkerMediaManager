@@ -4,17 +4,40 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <ScrollViewer>
-        <StackPanel Padding="40" Spacing="28">
+        <StackPanel
+            Padding="40"
+            Spacing="28">
 
-            <StackPanel Spacing="6">
-                <TextBlock
-                    Text="Dashboard"
-                    Style="{ThemeResource TitleTextBlockStyle}" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
 
-                <TextBlock
-                    Text="Your media collection at a glance."
-                    Style="{ThemeResource SubtitleTextBlockStyle}" />
-            </StackPanel>
+                <StackPanel Spacing="6">
+                    <TextBlock
+                        Text="Dashboard"
+                        Style="{ThemeResource TitleTextBlockStyle}" />
+
+                    <TextBlock
+                        Text="Your media collection at a glance."
+                        Style="{ThemeResource SubtitleTextBlockStyle}" />
+                </StackPanel>
+
+                <ProgressRing
+                    x:Name="DashboardProgressRing"
+                    Grid.Column="1"
+                    Width="28"
+                    Height="28"
+                    IsActive="False"
+                    Visibility="Collapsed"
+                    VerticalAlignment="Center" />
+            </Grid>
+
+            <InfoBar
+                x:Name="DashboardErrorInfoBar"
+                IsOpen="False"
+                IsClosable="True" />
 
             <Border
                 Padding="24"
@@ -206,8 +229,9 @@
                             <TextBlock Text="Local Database" />
 
                             <TextBlock
+                                x:Name="DatabaseStatusText"
                                 Grid.Column="1"
-                                Text="Connected"
+                                Text="Checking..."
                                 Opacity="0.7" />
                         </Grid>
 
@@ -255,9 +279,50 @@
                             FontSize="22"
                             FontWeight="SemiBold" />
 
-                        <TextBlock Text="Possible Duplicates: 0" />
-                        <TextBlock Text="Incomplete Collections: 0" />
-                        <TextBlock Text="Missing Metadata: 0" />
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="Possible Duplicates" />
+
+                            <TextBlock
+                                x:Name="DuplicateCountText"
+                                Grid.Column="1"
+                                Text="0"
+                                FontWeight="SemiBold" />
+                        </Grid>
+
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="Incomplete Collections" />
+
+                            <TextBlock
+                                x:Name="IncompleteCollectionCountText"
+                                Grid.Column="1"
+                                Text="0"
+                                FontWeight="SemiBold" />
+                        </Grid>
+
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="Missing Movie Metadata" />
+
+                            <TextBlock
+                                x:Name="MissingMetadataCountText"
+                                Grid.Column="1"
+                                Text="0"
+                                FontWeight="SemiBold" />
+                        </Grid>
                     </StackPanel>
                 </Border>
             </Grid>
