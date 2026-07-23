@@ -3,15 +3,232 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-	<Grid Padding="40">
-		<StackPanel Spacing="12">
-			<TextBlock
+    <Grid Padding="40" RowSpacing="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Spacing="6">
+            <TextBlock
                 Text="Smart Buy"
                 Style="{ThemeResource TitleTextBlockStyle}" />
 
-			<TextBlock
-                Text="Search your collection before making a purchase."
+            <TextBlock
+                Text="Search before you buy and avoid duplicate purchases."
                 Style="{ThemeResource SubtitleTextBlockStyle}" />
-		</StackPanel>
-	</Grid>
+        </StackPanel>
+
+        <Border
+            Grid.Row="1"
+            Padding="24"
+            CornerRadius="12"
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1">
+
+            <StackPanel Spacing="16">
+                <TextBlock
+                    Text="What are you thinking about buying?"
+                    FontSize="22"
+                    FontWeight="SemiBold" />
+
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox
+                        x:Name="SearchBox"
+                        Header="Movie or TV-show title"
+                        PlaceholderText="For example: Top Gun"
+                        KeyDown="SearchBox_KeyDown" />
+
+                    <Button
+                        Grid.Column="1"
+                        Content="Search"
+                        Padding="26,10"
+                        VerticalAlignment="Bottom"
+                        Click="SearchButton_Click" />
+
+                    <Button
+                        Grid.Column="2"
+                        Content="Clear"
+                        Padding="18,10"
+                        VerticalAlignment="Bottom"
+                        Click="ClearButton_Click" />
+                </Grid>
+
+                <ProgressRing
+                    x:Name="SearchProgressRing"
+                    Width="28"
+                    Height="28"
+                    IsActive="False"
+                    Visibility="Collapsed"
+                    HorizontalAlignment="Left" />
+
+                <InfoBar
+                    x:Name="SearchInfoBar"
+                    IsOpen="False"
+                    IsClosable="True" />
+            </StackPanel>
+        </Border>
+
+        <Grid
+            Grid.Row="2"
+            RowSpacing="16">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock
+                    x:Name="ResultsHeadingText"
+                    Text="Search Results"
+                    FontSize="22"
+                    FontWeight="SemiBold" />
+
+                <TextBlock
+                    x:Name="ResultCountText"
+                    Grid.Column="1"
+                    Text=""
+                    Opacity="0.7"
+                    VerticalAlignment="Center" />
+            </Grid>
+
+            <Grid Grid.Row="1">
+                <StackPanel
+                    x:Name="EmptyStatePanel"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="12">
+
+                    <FontIcon
+                        Glyph="&#xE721;"
+                        FontSize="48"
+                        Opacity="0.55"
+                        HorizontalAlignment="Center" />
+
+                    <TextBlock
+                        Text="Search your collection"
+                        FontSize="22"
+                        FontWeight="SemiBold"
+                        HorizontalAlignment="Center" />
+
+                    <TextBlock
+                        Text="Enter a movie or TV-show title to see whether you already own it."
+                        TextWrapping="Wrap"
+                        MaxWidth="500"
+                        TextAlignment="Center"
+                        Opacity="0.7" />
+                </StackPanel>
+
+                <ListView
+                    x:Name="ResultsListView"
+                    ItemsSource="{x:Bind Results, Mode=OneWay}"
+                    SelectionMode="None"
+                    Visibility="Collapsed">
+
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Border
+                                Margin="0,0,0,12"
+                                Padding="20"
+                                CornerRadius="10"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1">
+
+                                <Grid ColumnSpacing="20">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border
+                                        Width="54"
+                                        Height="54"
+                                        CornerRadius="27"
+                                        Background="{ThemeResource AccentFillColorSecondaryBrush}">
+
+                                        <FontIcon
+                                            Glyph="&#xE73E;"
+                                            FontSize="26"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center" />
+                                    </Border>
+
+                                    <StackPanel
+                                        Grid.Column="1"
+                                        Spacing="5"
+                                        VerticalAlignment="Center">
+
+                                        <TextBlock
+                                            Text="{Binding Title}"
+                                            FontSize="21"
+                                            FontWeight="SemiBold" />
+
+                                        <StackPanel
+                                            Orientation="Horizontal"
+                                            Spacing="8">
+
+                                            <TextBlock
+                                                Text="{Binding MediaType}"
+                                                FontWeight="SemiBold"
+                                                Opacity="0.75" />
+
+                                            <TextBlock
+                                                Text="•"
+                                                Opacity="0.5" />
+
+                                            <TextBlock
+                                                Text="{Binding YearDisplay}"
+                                                Opacity="0.75" />
+                                        </StackPanel>
+
+                                        <TextBlock
+                                            Text="{Binding Details}"
+                                            Opacity="0.65" />
+                                    </StackPanel>
+
+                                    <StackPanel
+                                        Grid.Column="2"
+                                        Spacing="4"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Right">
+
+                                        <FontIcon
+                                            Glyph="&#xE73E;"
+                                            FontSize="24"
+                                            HorizontalAlignment="Center" />
+
+                                        <TextBlock
+                                            Text="{Binding OwnershipStatus}"
+                                            FontSize="16"
+                                            FontWeight="SemiBold" />
+
+                                        <TextBlock
+                                            Text="Do not buy another copy"
+                                            FontSize="12"
+                                            Opacity="0.65" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+        </Grid>
+    </Grid>
 </Page>
