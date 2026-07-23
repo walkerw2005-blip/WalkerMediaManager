@@ -12,8 +12,8 @@ namespace WalkerMediaManager.UI.Views;
 
 public sealed partial class SmartBuyPage : Page
 {
-    private readonly SmartBuyRepository _smartBuyRepository =
-        new();
+    private readonly SmartBuyRepository _smartBuyRepository = new();
+    private readonly WishlistRepository _wishlistRepository = new();
 
     public ObservableCollection<SmartBuyResult> Results { get; } =
         [];
@@ -53,22 +53,64 @@ public sealed partial class SmartBuyPage : Page
         await RunSearchAsync();
     }
 
+    private async void AddToWishlistButton_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        string title = SearchBox.Text.Trim();
+
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            return;
+        }
+
+        try
+        {
+            if (await _wishlistRepository.ExistsAsync(title))
+            {
+                ShowMessage(
+                    $"{title} is already on your wishlist.",
+                    InfoBarSeverity.Warning);
+
+                return;
+            }
+
+            WishlistItem item = new()
+            {
+                Title = title,
+                Priority = 2
+            };
+
+            await _wishlistRepository.AddAsync(item);
+
+            AddToWishlistButton.Visibility =
+                Visibility.Collapsed;
+
+            ShowMessage(
+                $"{title} was added to your wishlist.",
+                InfoBarSeverity.Success);
+        }
+        catch (Exception exception)
+        {
+            ShowMessage(
+                $"The title could not be added to your wishlist: " +
+                exception.Message,
+                InfoBarSeverity.Error);
+        }
+    }
+
     private void ClearButton_Click(
         object sender,
         RoutedEventArgs e)
     {
         SearchBox.Text = string.Empty;
-
         Results.Clear();
 
-        ResultsListView.Visibility =
-            Visibility.Collapsed;
-
-        EmptyStatePanel.Visibility =
-            Visibility.Visible;
+        ResultsListView.Visibility = Visibility.Collapsed;
+        EmptyStatePanel.Visibility = Visibility.Visible;
+        AddToWishlistButton.Visibility = Visibility.Collapsed;
 
         ResultCountText.Text = string.Empty;
-
         SearchInfoBar.IsOpen = false;
 
         SearchBox.Focus(FocusState.Programmatic);
@@ -88,6 +130,7 @@ public sealed partial class SmartBuyPage : Page
         }
 
         SetSearchingState(true);
+        AddToWishlistButton.Visibility = Visibility.Collapsed;
 
         try
         {
@@ -102,28 +145,21 @@ public sealed partial class SmartBuyPage : Page
 
             if (Results.Count == 0)
             {
-                ResultsListView.Visibility =
-                    Visibility.Collapsed;
+                ResultsListView.Visibility = Visibility.Collapsed;
+                EmptyStatePanel.Visibility = Visibility.Visible;
+                AddToWishlistButton.Visibility = Visibility.Visible;
 
-                EmptyStatePanel.Visibility =
-                    Visibility.Visible;
-
-                ResultCountText.Text =
-                    "0 results";
+                ResultCountText.Text = "0 results";
 
                 ShowMessage(
-                    $"No owned title matched “{searchText}”. " +
-                    "This may be a safe purchase, but confirm the title and year first.",
+                    $"No owned title matched “{searchText}”.",
                     InfoBarSeverity.Informational);
 
                 return;
             }
 
-            EmptyStatePanel.Visibility =
-                Visibility.Collapsed;
-
-            ResultsListView.Visibility =
-                Visibility.Visible;
+            EmptyStatePanel.Visibility = Visibility.Collapsed;
+            ResultsListView.Visibility = Visibility.Visible;
 
             ResultCountText.Text =
                 Results.Count == 1
@@ -131,21 +167,14 @@ public sealed partial class SmartBuyPage : Page
                     : $"{Results.Count} results";
 
             ShowMessage(
-                Results.Count == 1
-                    ? "You already own a matching title."
-                    : "You already own matching titles.",
+                "You already own a matching title.",
                 InfoBarSeverity.Warning);
         }
         catch (Exception exception)
         {
-            ResultsListView.Visibility =
-                Visibility.Collapsed;
-
-            EmptyStatePanel.Visibility =
-                Visibility.Visible;
-
-            ResultCountText.Text =
-                string.Empty;
+            ResultsListView.Visibility = Visibility.Collapsed;
+            EmptyStatePanel.Visibility = Visibility.Visible;
+            ResultCountText.Text = string.Empty;
 
             ShowMessage(
                 $"Smart Buy could not search the collection: " +
@@ -161,16 +190,14 @@ public sealed partial class SmartBuyPage : Page
     private void SetSearchingState(
         bool isSearching)
     {
-        SearchProgressRing.IsActive =
-            isSearching;
+        SearchProgressRing.IsActive = isSearching;
 
         SearchProgressRing.Visibility =
             isSearching
                 ? Visibility.Visible
                 : Visibility.Collapsed;
 
-        SearchBox.IsEnabled =
-            !isSearching;
+        SearchBox.IsEnabled = !isSearching;
     }
 
     private void ShowMessage(

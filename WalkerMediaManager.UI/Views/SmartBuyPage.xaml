@@ -74,6 +74,14 @@
                     x:Name="SearchInfoBar"
                     IsOpen="False"
                     IsClosable="True" />
+
+                <Button
+                    x:Name="AddToWishlistButton"
+                    Content="Add Search to Wishlist"
+                    Padding="22,10"
+                    HorizontalAlignment="Left"
+                    Visibility="Collapsed"
+                    Click="AddToWishlistButton_Click" />
             </StackPanel>
         </Border>
 
@@ -93,7 +101,6 @@
                 </Grid.ColumnDefinitions>
 
                 <TextBlock
-                    x:Name="ResultsHeadingText"
                     Text="Search Results"
                     FontSize="22"
                     FontWeight="SemiBold" />
@@ -101,7 +108,6 @@
                 <TextBlock
                     x:Name="ResultCountText"
                     Grid.Column="1"
-                    Text=""
                     Opacity="0.7"
                     VerticalAlignment="Center" />
             </Grid>
@@ -151,51 +157,19 @@
 
                                 <Grid ColumnSpacing="20">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
-                                    <Border
-                                        Width="54"
-                                        Height="54"
-                                        CornerRadius="27"
-                                        Background="{ThemeResource AccentFillColorSecondaryBrush}">
-
-                                        <FontIcon
-                                            Glyph="&#xE73E;"
-                                            FontSize="26"
-                                            HorizontalAlignment="Center"
-                                            VerticalAlignment="Center" />
-                                    </Border>
-
-                                    <StackPanel
-                                        Grid.Column="1"
-                                        Spacing="5"
-                                        VerticalAlignment="Center">
-
+                                    <StackPanel Spacing="5">
                                         <TextBlock
                                             Text="{Binding Title}"
                                             FontSize="21"
                                             FontWeight="SemiBold" />
 
-                                        <StackPanel
-                                            Orientation="Horizontal"
-                                            Spacing="8">
-
-                                            <TextBlock
-                                                Text="{Binding MediaType}"
-                                                FontWeight="SemiBold"
-                                                Opacity="0.75" />
-
-                                            <TextBlock
-                                                Text="•"
-                                                Opacity="0.5" />
-
-                                            <TextBlock
-                                                Text="{Binding YearDisplay}"
-                                                Opacity="0.75" />
-                                        </StackPanel>
+                                        <TextBlock
+                                            Text="{Binding MediaType}"
+                                            Opacity="0.75" />
 
                                         <TextBlock
                                             Text="{Binding Details}"
@@ -203,7 +177,7 @@
                                     </StackPanel>
 
                                     <StackPanel
-                                        Grid.Column="2"
+                                        Grid.Column="1"
                                         Spacing="4"
                                         VerticalAlignment="Center"
                                         HorizontalAlignment="Right">
@@ -215,7 +189,6 @@
 
                                         <TextBlock
                                             Text="{Binding OwnershipStatus}"
-                                            FontSize="16"
                                             FontWeight="SemiBold" />
 
                                         <TextBlock
