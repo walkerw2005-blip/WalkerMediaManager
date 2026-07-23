@@ -11,11 +11,12 @@ namespace WalkerMediaManager.UI.Views;
 public sealed partial class WishlistPage : Page
 {
     private readonly WishlistRepository _wishlistRepository = new();
+    private readonly MovieRepository _movieRepository = new();
+    private readonly SmartBuyRepository _smartBuyRepository = new();
 
     private WishlistItem? _itemBeingEdited;
 
-    public ObservableCollection<WishlistItem> WishlistItems { get; } =
-        [];
+    public ObservableCollection<WishlistItem> WishlistItems { get; } = [];
 
     public WishlistPage()
     {
@@ -70,8 +71,7 @@ public sealed partial class WishlistPage : Page
                     Priority = priority
                 };
 
-                item.Id =
-                    await _wishlistRepository.AddAsync(item);
+                item.Id = await _wishlistRepository.AddAsync(item);
 
                 ShowStatus(
                     $"{item.Title} was added to your wishlist.",
@@ -91,13 +91,94 @@ public sealed partial class WishlistPage : Page
             }
 
             ResetForm();
-
             await RefreshWishlistAsync();
         }
         catch (Exception exception)
         {
             ShowStatus(
                 $"The wishlist item could not be saved: {exception.Message}",
+                InfoBarSeverity.Error);
+        }
+    }
+
+    private async void MarkPurchasedButton_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        if (sender is not Button button ||
+            button.Tag is not WishlistItem item)
+        {
+            return;
+        }
+
+        ContentDialog confirmationDialog = new()
+        {
+            Title = "Mark as purchased?",
+            Content =
+                $"Add {item.Title} to your owned movies and remove it from the wishlist?",
+            PrimaryButtonText = "Mark Purchased",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Primary,
+            XamlRoot = XamlRoot
+        };
+
+        ContentDialogResult result =
+            await confirmationDialog.ShowAsync();
+
+        if (result != ContentDialogResult.Primary)
+        {
+            return;
+        }
+
+        try
+        {
+            bool alreadyOwned =
+                await _smartBuyRepository.ExactMovieExistsAsync(
+                    item.Title,
+                    0);
+
+            if (alreadyOwned)
+            {
+                ShowStatus(
+                    $"{item.Title} is already in your movie collection.",
+                    InfoBarSeverity.Warning);
+
+                return;
+            }
+
+            Movie movie = new()
+            {
+                Title = item.Title,
+                ReleaseYear = 0,
+                Rating = string.Empty,
+                Runtime = 0,
+                Genre = string.Empty,
+                Director = string.Empty,
+                Format = "DVD",
+                Owned = true,
+                PlexGuid = string.Empty,
+                TMDbId = null,
+                IMDbId = string.Empty
+            };
+
+            await _movieRepository.AddAsync(movie);
+            await _wishlistRepository.DeleteAsync(item.Id);
+
+            if (_itemBeingEdited?.Id == item.Id)
+            {
+                ResetForm();
+            }
+
+            await RefreshWishlistAsync();
+
+            ShowStatus(
+                $"{item.Title} was moved to your movie collection.",
+                InfoBarSeverity.Success);
+        }
+        catch (Exception exception)
+        {
+            ShowStatus(
+                $"The purchase could not be recorded: {exception.Message}",
                 InfoBarSeverity.Error);
         }
     }

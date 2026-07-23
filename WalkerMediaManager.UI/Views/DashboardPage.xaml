@@ -164,6 +164,7 @@
                                 HorizontalAlignment="Left" />
 
                             <TextBlock
+                                x:Name="WishlistCountText"
                                 Text="0"
                                 FontSize="32"
                                 FontWeight="SemiBold" />

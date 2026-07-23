@@ -9,6 +9,7 @@ public sealed partial class DashboardPage : Page
 {
     private readonly MovieRepository _movieRepository = new();
     private readonly TVShowRepository _tvShowRepository = new();
+    private readonly WishlistRepository _wishlistRepository = new();
 
     public DashboardPage()
     {
@@ -22,11 +23,14 @@ public sealed partial class DashboardPage : Page
 
         int movieCount = await _movieRepository.CountAsync();
         int tvShowCount = await _tvShowRepository.CountAsync();
+        int wishlistCount = await _wishlistRepository.CountAsync();
 
         MovieCountText.Text = movieCount.ToString();
         TvSeriesCountText.Text = tvShowCount.ToString();
         OwnedTitleCountText.Text =
             (movieCount + tvShowCount).ToString();
+
+        WishlistCountText.Text = wishlistCount.ToString();
     }
 
     private void OpenSmartBuy_Click(

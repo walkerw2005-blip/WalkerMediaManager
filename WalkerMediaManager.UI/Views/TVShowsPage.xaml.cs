@@ -95,7 +95,6 @@ public sealed partial class TvShowsPage : Page
             }
 
             ResetForm();
-
             await RefreshShowsAsync();
         }
         catch (Exception exception)

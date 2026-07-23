@@ -123,10 +123,11 @@
                             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                             BorderThickness="1">
 
-                            <Grid ColumnSpacing="14">
+                            <Grid ColumnSpacing="12">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="130" />
+                                    <ColumnDefinition Width="110" />
+                                    <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
@@ -144,12 +145,18 @@
 
                                 <Button
                                     Grid.Column="2"
+                                    Content="Mark Purchased"
+                                    Tag="{Binding}"
+                                    Click="MarkPurchasedButton_Click" />
+
+                                <Button
+                                    Grid.Column="3"
                                     Content="Edit"
                                     Tag="{Binding}"
                                     Click="EditButton_Click" />
 
                                 <Button
-                                    Grid.Column="3"
+                                    Grid.Column="4"
                                     Content="Remove"
                                     Tag="{Binding}"
                                     Click="RemoveButton_Click" />
