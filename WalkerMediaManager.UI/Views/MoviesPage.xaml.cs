@@ -5,12 +5,16 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WalkerMediaManager.UI.Models;
 using WalkerMediaManager.UI.Repositories;
+using WalkerMediaManager.UI.Services;
 
 namespace WalkerMediaManager.UI.Views;
 
 public sealed partial class MoviesPage : Page
 {
     private readonly MovieRepository _movieRepository = new();
+
+    private readonly MovieSpreadsheetImportService
+        _spreadsheetImportService = new();
 
     private Movie? _movieBeingEdited;
 
@@ -30,6 +34,51 @@ public sealed partial class MoviesPage : Page
         await RefreshMoviesAsync();
     }
 
+    private async void ImportSpreadsheetButton_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        string filePath =
+            SpreadsheetPathBox.Text.Trim();
+
+        if (string.IsNullOrWhiteSpace(filePath))
+        {
+            ShowImportStatus(
+                "Paste the full path to the Excel spreadsheet.",
+                InfoBarSeverity.Warning);
+
+            return;
+        }
+
+        SetImportingState(true);
+
+        try
+        {
+            MovieImportResult result =
+                await _spreadsheetImportService.ImportAsync(
+                    filePath);
+
+            await RefreshMoviesAsync();
+
+            ShowImportStatus(
+                result.Summary,
+                result.FailedCount > 0
+                    ? InfoBarSeverity.Warning
+                    : InfoBarSeverity.Success);
+        }
+        catch (Exception exception)
+        {
+            ShowImportStatus(
+                $"The spreadsheet could not be imported: " +
+                exception.Message,
+                InfoBarSeverity.Error);
+        }
+        finally
+        {
+            SetImportingState(false);
+        }
+    }
+
     private async void SaveMovie_Click(
         object sender,
         RoutedEventArgs e)
@@ -46,7 +95,9 @@ public sealed partial class MoviesPage : Page
         }
 
         if (!string.IsNullOrWhiteSpace(YearBox.Text) &&
-            !int.TryParse(YearBox.Text.Trim(), out _))
+            !int.TryParse(
+                YearBox.Text.Trim(),
+                out _))
         {
             ShowStatus(
                 "Release year must be a number.",
@@ -55,15 +106,15 @@ public sealed partial class MoviesPage : Page
             return;
         }
 
-        int.TryParse(YearBox.Text.Trim(), out int releaseYear);
-
         try
         {
             if (_movieBeingEdited is null)
             {
-                Movie movie = CreateMovieFromForm();
+                Movie movie =
+                    CreateMovieFromForm();
 
-                movie.Id = await _movieRepository.AddAsync(movie);
+                movie.Id =
+                    await _movieRepository.AddAsync(movie);
 
                 ShowStatus(
                     $"{movie.Title} was added successfully.",
@@ -71,9 +122,11 @@ public sealed partial class MoviesPage : Page
             }
             else
             {
-                UpdateMovieFromForm(_movieBeingEdited);
+                UpdateMovieFromForm(
+                    _movieBeingEdited);
 
-                await _movieRepository.UpdateAsync(_movieBeingEdited);
+                await _movieRepository.UpdateAsync(
+                    _movieBeingEdited);
 
                 ShowStatus(
                     $"{_movieBeingEdited.Title} was updated successfully.",
@@ -81,13 +134,13 @@ public sealed partial class MoviesPage : Page
             }
 
             ResetForm();
-
             await RefreshMoviesAsync();
         }
         catch (Exception exception)
         {
             ShowStatus(
-                $"The movie could not be saved: {exception.Message}",
+                $"The movie could not be saved: " +
+                exception.Message,
                 InfoBarSeverity.Error);
         }
     }
@@ -106,9 +159,11 @@ public sealed partial class MoviesPage : Page
 
         FormTitleText.Text = "Edit Movie";
         SaveMovieButton.Content = "Save Changes";
-        CancelEditButton.Visibility = Visibility.Visible;
+        CancelEditButton.Visibility =
+            Visibility.Visible;
 
         TitleBox.Text = movie.Title;
+
         YearBox.Text =
             movie.ReleaseYear == 0
                 ? string.Empty
@@ -118,7 +173,8 @@ public sealed partial class MoviesPage : Page
         GenreBox.Text = movie.Genre;
         DirectorBox.Text = movie.Director;
 
-        TitleBox.Focus(FocusState.Programmatic);
+        TitleBox.Focus(
+            FocusState.Programmatic);
     }
 
     private async void DeleteMovie_Click(
@@ -134,7 +190,8 @@ public sealed partial class MoviesPage : Page
         ContentDialog confirmationDialog = new()
         {
             Title = "Delete movie?",
-            Content = $"Remove {movie.Title} from Walker Media Manager?",
+            Content =
+                $"Remove {movie.Title} from Walker Media Manager?",
             PrimaryButtonText = "Delete",
             CloseButtonText = "Cancel",
             DefaultButton = ContentDialogButton.Close,
@@ -151,7 +208,8 @@ public sealed partial class MoviesPage : Page
 
         try
         {
-            await _movieRepository.DeleteAsync(movie.Id);
+            await _movieRepository.DeleteAsync(
+                movie.Id);
 
             if (_movieBeingEdited?.Id == movie.Id)
             {
@@ -167,7 +225,8 @@ public sealed partial class MoviesPage : Page
         catch (Exception exception)
         {
             ShowStatus(
-                $"The movie could not be deleted: {exception.Message}",
+                $"The movie could not be deleted: " +
+                exception.Message,
                 InfoBarSeverity.Error);
         }
     }
@@ -181,7 +240,9 @@ public sealed partial class MoviesPage : Page
 
     private Movie CreateMovieFromForm()
     {
-        int.TryParse(YearBox.Text.Trim(), out int releaseYear);
+        int.TryParse(
+            YearBox.Text.Trim(),
+            out int releaseYear);
 
         return new Movie
         {
@@ -191,27 +252,44 @@ public sealed partial class MoviesPage : Page
             Genre = GenreBox.Text.Trim(),
             Director = DirectorBox.Text.Trim(),
             Runtime = 0,
+            Format = "DVD",
+            Owned = true,
             PlexGuid = string.Empty,
+            TMDbId = null,
             IMDbId = string.Empty
         };
     }
 
-    private void UpdateMovieFromForm(Movie movie)
+    private void UpdateMovieFromForm(
+        Movie movie)
     {
-        int.TryParse(YearBox.Text.Trim(), out int releaseYear);
+        int.TryParse(
+            YearBox.Text.Trim(),
+            out int releaseYear);
 
-        movie.Title = TitleBox.Text.Trim();
-        movie.ReleaseYear = releaseYear;
-        movie.Rating = RatingBox.Text.Trim();
-        movie.Genre = GenreBox.Text.Trim();
-        movie.Director = DirectorBox.Text.Trim();
+        movie.Title =
+            TitleBox.Text.Trim();
+
+        movie.ReleaseYear =
+            releaseYear;
+
+        movie.Rating =
+            RatingBox.Text.Trim();
+
+        movie.Genre =
+            GenreBox.Text.Trim();
+
+        movie.Director =
+            DirectorBox.Text.Trim();
     }
 
     private async Task RefreshMoviesAsync()
     {
         Movies.Clear();
 
-        foreach (Movie movie in await _movieRepository.GetAllAsync())
+        foreach (
+            Movie movie
+            in await _movieRepository.GetAllAsync())
         {
             Movies.Add(movie);
         }
@@ -228,13 +306,42 @@ public sealed partial class MoviesPage : Page
 
         FormTitleText.Text = "Add Movie";
         SaveMovieButton.Content = "Add Movie";
-        CancelEditButton.Visibility = Visibility.Collapsed;
+
+        CancelEditButton.Visibility =
+            Visibility.Collapsed;
 
         TitleBox.Text = string.Empty;
         YearBox.Text = string.Empty;
         RatingBox.Text = string.Empty;
         GenreBox.Text = string.Empty;
         DirectorBox.Text = string.Empty;
+    }
+
+    private void SetImportingState(
+        bool isImporting)
+    {
+        ImportSpreadsheetButton.IsEnabled =
+            !isImporting;
+
+        SpreadsheetPathBox.IsEnabled =
+            !isImporting;
+
+        ImportProgressRing.IsActive =
+            isImporting;
+
+        ImportProgressRing.Visibility =
+            isImporting
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+    }
+
+    private void ShowImportStatus(
+        string message,
+        InfoBarSeverity severity)
+    {
+        ImportInfoBar.Message = message;
+        ImportInfoBar.Severity = severity;
+        ImportInfoBar.IsOpen = true;
     }
 
     private void ShowStatus(
