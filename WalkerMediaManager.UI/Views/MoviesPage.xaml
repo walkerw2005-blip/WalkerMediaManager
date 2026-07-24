@@ -67,6 +67,7 @@
                 <GridView.ItemTemplate>
                     <DataTemplate>
                         <controls:MediaCard Movie="{Binding}"
+                                            OpenRequested="MediaCard_OpenRequested"
                                             EditRequested="MediaCard_EditRequested"
                                             DeleteRequested="MediaCard_DeleteRequested" />
                     </DataTemplate>
@@ -88,6 +89,7 @@
                                     <ColumnDefinition Width="180" />
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <StackPanel>
                                     <TextBlock Text="{Binding Title}" FontSize="17" FontWeight="SemiBold" />
@@ -96,8 +98,9 @@
                                 <TextBlock Grid.Column="1" Text="{Binding YearDisplay}" VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="2" Text="{Binding RatingDisplay}" VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="3" Text="{Binding Genre}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-                                <Button Grid.Column="4" Content="Edit" Tag="{Binding}" Click="EditMovie_Click" />
-                                <Button Grid.Column="5" Content="Delete" Tag="{Binding}" Click="DeleteMovie_Click" />
+                                <Button Grid.Column="4" Content="Open" Tag="{Binding}" Click="OpenMovie_Click" />
+                                <Button Grid.Column="5" Content="Edit" Tag="{Binding}" Click="EditMovie_Click" />
+                                <Button Grid.Column="6" Content="Delete" Tag="{Binding}" Click="DeleteMovie_Click" />
                             </Grid>
                         </Border>
                     </DataTemplate>

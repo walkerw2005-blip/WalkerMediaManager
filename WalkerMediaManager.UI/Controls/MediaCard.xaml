@@ -12,29 +12,25 @@
         BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
         BorderThickness="1">
         <StackPanel Spacing="10">
-            <Grid Height="285" Background="{ThemeResource ControlFillColorSecondaryBrush}">
-                <FontIcon
-                    Glyph="&#xE7B8;"
-                    FontSize="58"
-                    Opacity="0.35"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center" />
-            </Grid>
+            <Button Padding="0" HorizontalAlignment="Stretch" Click="OpenButton_Click"
+                    Background="Transparent" BorderThickness="0" ToolTipService.ToolTip="Open movie details">
+                <Grid Height="285" Background="{ThemeResource ControlFillColorSecondaryBrush}">
+                    <FontIcon Glyph="&#xE7B8;" FontSize="58" Opacity="0.35"
+                              HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <Border VerticalAlignment="Bottom" Background="#99000000" Padding="10,7">
+                        <TextBlock Text="View details" Foreground="White" HorizontalAlignment="Center" />
+                    </Border>
+                </Grid>
+            </Button>
 
             <StackPanel Margin="14,0" Spacing="5">
-                <TextBlock
-                    Text="{x:Bind Movie.Title, Mode=OneWay}"
-                    FontSize="17"
-                    FontWeight="SemiBold"
-                    TextWrapping="Wrap"
-                    MaxLines="2" />
-                <TextBlock
-                    Text="{x:Bind Movie.YearDisplay, Mode=OneWay}"
-                    Opacity="0.7" />
-                <TextBlock
-                    Text="{x:Bind Movie.Genre, Mode=OneWay}"
-                    Opacity="0.65"
-                    TextTrimming="CharacterEllipsis" />
+                <Button Padding="0" HorizontalAlignment="Left" Click="OpenButton_Click"
+                        Background="Transparent" BorderThickness="0">
+                    <TextBlock Text="{x:Bind Movie.Title, Mode=OneWay}" FontSize="17" FontWeight="SemiBold"
+                               TextWrapping="Wrap" MaxLines="2" />
+                </Button>
+                <TextBlock Text="{x:Bind Movie.YearDisplay, Mode=OneWay}" Opacity="0.7" />
+                <TextBlock Text="{x:Bind Movie.Genre, Mode=OneWay}" Opacity="0.65" TextTrimming="CharacterEllipsis" />
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <Border Padding="7,3" CornerRadius="5" Background="{ThemeResource ControlFillColorSecondaryBrush}">
                         <TextBlock Text="{x:Bind Movie.RatingDisplay, Mode=OneWay}" FontSize="12" />
@@ -42,6 +38,7 @@
                     <TextBlock Text="{x:Bind Movie.RuntimeDisplay, Mode=OneWay}" VerticalAlignment="Center" Opacity="0.65" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,6,0,0">
+                    <Button Content="Open" Click="OpenButton_Click" />
                     <Button Content="Edit" Click="EditButton_Click" />
                     <Button Content="Delete" Click="DeleteButton_Click" />
                 </StackPanel>

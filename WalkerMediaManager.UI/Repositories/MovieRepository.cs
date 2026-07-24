@@ -52,6 +52,47 @@ public sealed class MovieRepository
         return movies;
     }
 
+    public async Task<Movie?> GetByIdAsync(int movieId)
+    {
+        await using SqliteConnection connection = new($"Data Source={DatabaseService.DatabasePath}");
+        await connection.OpenAsync();
+        await using SqliteCommand command = connection.CreateCommand();
+        command.CommandText =
+            """
+            SELECT Id, Title, ReleaseYear, Rating, Runtime, Genre, Director,
+                   PlexRatingKey, PlexGuid, TMDbId, IMDbId, SortTitle, Studio,
+                   Summary, PosterPath, BackgroundPath, LastSynced
+            FROM Movies
+            WHERE Id = $id;
+            """;
+        command.Parameters.AddWithValue("$id", movieId);
+
+        await using SqliteDataReader reader = await command.ExecuteReaderAsync();
+        if (!await reader.ReadAsync()) return null;
+
+        return new Movie
+        {
+            Id = reader.GetInt32(0),
+            Title = GetString(reader, 1),
+            ReleaseYear = GetInt32(reader, 2),
+            Rating = GetString(reader, 3),
+            Runtime = GetInt32(reader, 4),
+            Genre = GetString(reader, 5),
+            Director = GetString(reader, 6),
+            PlexRatingKey = GetString(reader, 7),
+            PlexGuid = GetString(reader, 8),
+            TMDbId = reader.IsDBNull(9) ? null : reader.GetInt32(9),
+            IMDbId = GetString(reader, 10),
+            SortTitle = GetString(reader, 11),
+            Studio = GetString(reader, 12),
+            Summary = GetString(reader, 13),
+            PosterPath = GetString(reader, 14),
+            BackgroundPath = GetString(reader, 15),
+            LastSynced = GetString(reader, 16),
+            Owned = true
+        };
+    }
+
     public async Task<int> AddAsync(Movie movie)
     {
         await using SqliteConnection connection = new($"Data Source={DatabaseService.DatabasePath}");

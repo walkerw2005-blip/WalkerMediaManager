@@ -136,8 +136,19 @@ public sealed partial class MoviesPage : Page
         await MovieEditorDialog.ShowAsync();
     }
 
+    private void MediaCard_OpenRequested(object? sender, Movie movie) => OpenMovie(movie);
     private async void MediaCard_EditRequested(object? sender, Movie movie) => await ShowEditDialogAsync(movie);
     private async void MediaCard_DeleteRequested(object? sender, Movie movie) => await ConfirmDeleteAsync(movie);
+
+    private void OpenMovie_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: Movie movie }) OpenMovie(movie);
+    }
+
+    private void OpenMovie(Movie movie)
+    {
+        Frame.Navigate(typeof(MovieDetailsPage), movie.Id);
+    }
 
     private async void EditMovie_Click(object sender, RoutedEventArgs e)
     {

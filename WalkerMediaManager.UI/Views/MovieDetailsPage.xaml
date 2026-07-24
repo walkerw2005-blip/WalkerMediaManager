@@ -1,0 +1,127 @@
+<Page
+    x:Class="WalkerMediaManager.UI.Views.MovieDetailsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid>
+        <ScrollViewer>
+            <Grid Padding="32" RowSpacing="22">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Grid ColumnSpacing="14">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Button Content="Back" Click="BackButton_Click" VerticalAlignment="Top" />
+                    <StackPanel Grid.Column="1" Spacing="4">
+                        <TextBlock x:Name="PageTitleText" Text="Movie Details" Style="{ThemeResource TitleTextBlockStyle}" />
+                        <TextBlock Text="Collection record and Plex metadata" Style="{ThemeResource SubtitleTextBlockStyle}" />
+                    </StackPanel>
+                </Grid>
+
+                <InfoBar x:Name="StatusInfoBar" Grid.Row="1" IsOpen="False" IsClosable="True" />
+
+                <Grid Grid.Row="2" ColumnSpacing="28">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="280" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Spacing="14">
+                        <Border Height="410" CornerRadius="14"
+                                Background="{ThemeResource ControlFillColorSecondaryBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="14">
+                                <FontIcon Glyph="&#xE7B8;" FontSize="76" Opacity="0.35" />
+                                <TextBlock Text="Poster artwork" Opacity="0.6" />
+                            </StackPanel>
+                        </Border>
+                        <Border Padding="14" CornerRadius="10"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Collection status" FontWeight="SemiBold" />
+                                <TextBlock x:Name="OwnershipText" Text="Owned" />
+                                <TextBlock x:Name="FormatText" Text="Format not recorded" Opacity="0.7" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Spacing="18">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="TitleText" Text="Movie" FontSize="38" FontWeight="SemiBold" TextWrapping="Wrap" />
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <Border Padding="9,4" CornerRadius="6" Background="{ThemeResource ControlFillColorSecondaryBrush}">
+                                    <TextBlock x:Name="YearText" Text="Year unknown" />
+                                </Border>
+                                <Border Padding="9,4" CornerRadius="6" Background="{ThemeResource ControlFillColorSecondaryBrush}">
+                                    <TextBlock x:Name="RatingText" Text="Not rated" />
+                                </Border>
+                                <Border Padding="9,4" CornerRadius="6" Background="{ThemeResource ControlFillColorSecondaryBrush}">
+                                    <TextBlock x:Name="RuntimeText" Text="Runtime unknown" />
+                                </Border>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <Border Padding="20" CornerRadius="12"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                            <StackPanel Spacing="12">
+                                <TextBlock Text="Overview" FontSize="20" FontWeight="SemiBold" />
+                                <TextBlock x:Name="SummaryText" Text="No summary is available." TextWrapping="Wrap" LineHeight="23" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Padding="20" CornerRadius="12"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                            <Grid RowSpacing="14" ColumnSpacing="24">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="150" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <TextBlock Text="Genre" FontWeight="SemiBold" />
+                                <TextBlock x:Name="GenreText" Grid.Column="1" Text="Not recorded" TextWrapping="Wrap" />
+                                <TextBlock Grid.Row="1" Text="Director" FontWeight="SemiBold" />
+                                <TextBlock x:Name="DirectorText" Grid.Row="1" Grid.Column="1" Text="Not recorded" TextWrapping="Wrap" />
+                                <TextBlock Grid.Row="2" Text="Studio" FontWeight="SemiBold" />
+                                <TextBlock x:Name="StudioText" Grid.Row="2" Grid.Column="1" Text="Not recorded" TextWrapping="Wrap" />
+                                <TextBlock Grid.Row="3" Text="Sort title" FontWeight="SemiBold" />
+                                <TextBlock x:Name="SortTitleText" Grid.Row="3" Grid.Column="1" Text="Not recorded" TextWrapping="Wrap" />
+                                <TextBlock Grid.Row="4" Text="Last Plex sync" FontWeight="SemiBold" />
+                                <TextBlock x:Name="LastSyncedText" Grid.Row="4" Grid.Column="1" Text="Never" TextWrapping="Wrap" />
+                                <TextBlock Grid.Row="5" Text="Artwork paths" FontWeight="SemiBold" />
+                                <TextBlock x:Name="ArtworkText" Grid.Row="5" Grid.Column="1" Text="Not recorded" TextWrapping="Wrap" />
+                            </Grid>
+                        </Border>
+
+                        <Border Padding="20" CornerRadius="12"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                            <StackPanel Spacing="12">
+                                <TextBlock Text="External identifiers" FontSize="20" FontWeight="SemiBold" />
+                                <TextBlock x:Name="PlexRatingKeyText" Text="Plex rating key: Not recorded" TextWrapping="Wrap" />
+                                <TextBlock x:Name="PlexGuidText" Text="Plex GUID: Not recorded" TextWrapping="Wrap" />
+                                <TextBlock x:Name="IMDbText" Text="IMDb ID: Not recorded" TextWrapping="Wrap" />
+                                <TextBlock x:Name="TMDbText" Text="TMDb ID: Not recorded" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </ScrollViewer>
+
+        <ProgressRing x:Name="LoadingRing" IsActive="True" Width="48" Height="48"
+                      HorizontalAlignment="Center" VerticalAlignment="Center" />
+    </Grid>
+</Page>

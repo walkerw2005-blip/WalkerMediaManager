@@ -20,6 +20,7 @@ public sealed partial class MediaCard : UserControl
         set => SetValue(MovieProperty, value);
     }
 
+    public event EventHandler<Movie>? OpenRequested;
     public event EventHandler<Movie>? EditRequested;
     public event EventHandler<Movie>? DeleteRequested;
 
@@ -27,6 +28,9 @@ public sealed partial class MediaCard : UserControl
     {
         InitializeComponent();
     }
+
+    private void OpenButton_Click(object sender, RoutedEventArgs e) =>
+        OpenRequested?.Invoke(this, Movie);
 
     private void EditButton_Click(object sender, RoutedEventArgs e) =>
         EditRequested?.Invoke(this, Movie);
