@@ -11,6 +11,8 @@ namespace WalkerMediaManager.UI.Services;
 
 public sealed class PlexService
 {
+    private const int MoviePageSize = 200;
+
     private readonly HttpClient _httpClient = new()
     {
         Timeout = TimeSpan.FromSeconds(60)
@@ -102,34 +104,85 @@ public sealed class PlexService
     {
         if (string.IsNullOrWhiteSpace(librarySectionKey))
         {
-            throw new ArgumentException("Select a Plex movie library.");
+            throw new ArgumentException(
+                "Select a Plex movie library.",
+                nameof(librarySectionKey));
         }
 
-        using HttpRequestMessage request = CreateRequest(
-            serverUrl,
-            $"/library/sections/{Uri.EscapeDataString(librarySectionKey)}/all",
-            token);
+        List<PlexMovie> movies = new();
+        int start = 0;
 
-        using HttpResponseMessage response =
-            await _httpClient.SendAsync(request, cancellationToken);
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
 
-        response.EnsureSuccessStatusCode();
+            string relativePath =
+                $"/library/sections/{Uri.EscapeDataString(librarySectionKey)}/all" +
+                $"?X-Plex-Container-Start={start}" +
+                $"&X-Plex-Container-Size={MoviePageSize}";
 
-        string xml = await response.Content.ReadAsStringAsync(
-            cancellationToken);
+            using HttpRequestMessage request = CreateRequest(
+                serverUrl,
+                relativePath,
+                token);
 
-        XDocument document = XDocument.Parse(xml);
+            using HttpResponseMessage response =
+                await _httpClient.SendAsync(
+                    request,
+                    HttpCompletionOption.ResponseHeadersRead,
+                    cancellationToken);
 
-        return document
-            .Descendants("Video")
-            .Where(element =>
-                string.Equals(
-                    element.Attribute("type")?.Value,
-                    "movie",
-                    StringComparison.OrdinalIgnoreCase))
-            .Select(ParseMovie)
-            .Where(movie => !string.IsNullOrWhiteSpace(movie.Title))
+            response.EnsureSuccessStatusCode();
+
+            string xml = await response.Content.ReadAsStringAsync(
+                cancellationToken);
+
+            XDocument document = XDocument.Parse(xml);
+            XElement? root = document.Root;
+
+            List<PlexMovie> page = document
+                .Descendants("Video")
+                .Where(element =>
+                    string.Equals(
+                        element.Attribute("type")?.Value,
+                        "movie",
+                        StringComparison.OrdinalIgnoreCase))
+                .Select(ParseMovie)
+                .Where(movie => !string.IsNullOrWhiteSpace(movie.Title))
+                .ToList();
+
+            movies.AddRange(page);
+
+            int returnedCount = page.Count;
+            int totalSize = ParseIntAttribute(root, "totalSize");
+
+            if (returnedCount == 0)
+            {
+                break;
+            }
+
+            start += returnedCount;
+
+            if (totalSize > 0 && start >= totalSize)
+            {
+                break;
+            }
+
+            if (returnedCount < MoviePageSize)
+            {
+                break;
+            }
+        }
+
+        return movies
+            .GroupBy(
+                movie => string.IsNullOrWhiteSpace(movie.PlexGuid)
+                    ? $"{movie.Title}|{movie.ReleaseYear}|{movie.PlexKey}"
+                    : movie.PlexGuid,
+                StringComparer.OrdinalIgnoreCase)
+            .Select(group => group.First())
             .OrderBy(movie => movie.Title)
+            .ThenBy(movie => movie.ReleaseYear)
             .ToList();
     }
 
@@ -174,6 +227,22 @@ public sealed class PlexService
         };
     }
 
+    private static int ParseIntAttribute(
+        XElement? element,
+        string attributeName)
+    {
+        if (element is null)
+        {
+            return 0;
+        }
+
+        return int.TryParse(
+            element.Attribute(attributeName)?.Value,
+            out int value)
+            ? value
+            : 0;
+    }
+
     private static HttpRequestMessage CreateRequest(
         string serverUrl,
         string relativePath,
@@ -187,7 +256,7 @@ public sealed class PlexService
 
         request.Headers.Add("X-Plex-Token", token.Trim());
         request.Headers.Add("X-Plex-Product", "Walker Media Manager");
-        request.Headers.Add("X-Plex-Version", "0.3.1");
+        request.Headers.Add("X-Plex-Version", "0.4.0");
         request.Headers.Add("X-Plex-Client-Identifier", "WalkerMediaManager-Windows");
         request.Headers.Add("Accept", "application/xml");
 
@@ -211,7 +280,8 @@ public sealed class PlexService
         }
 
         if (!Uri.TryCreate(value, UriKind.Absolute, out Uri? uri) ||
-            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+            (uri.Scheme != Uri.UriSchemeHttp &&
+             uri.Scheme != Uri.UriSchemeHttps))
         {
             throw new ArgumentException(
                 "Enter a valid Plex address, such as http://192.168.1.5:32400.");
