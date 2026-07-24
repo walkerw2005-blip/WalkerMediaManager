@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
@@ -25,8 +25,18 @@ public sealed class TVShowRepository
             SELECT
                 Id,
                 Title,
+                Year,
                 Seasons,
-                Episodes
+                Episodes,
+                PlexRatingKey,
+                PlexGuid,
+                TMDbId,
+                IMDbId,
+                Studio,
+                Summary,
+                PosterPath,
+                BackgroundPath,
+                LastSynced
             FROM TVShows
             ORDER BY Title;
             """;
@@ -39,18 +49,20 @@ public sealed class TVShowRepository
             shows.Add(new TVShow
             {
                 Id = reader.GetInt32(0),
-                Title = reader.IsDBNull(1)
-                    ? string.Empty
-                    : reader.GetString(1),
-                Seasons = reader.IsDBNull(2)
-                    ? 0
-                    : reader.GetInt32(2),
-                Episodes = reader.IsDBNull(3)
-                    ? 0
-                    : reader.GetInt32(3),
+                Title = GetString(reader, 1),
+                Year = GetInt32(reader, 2),
+                Seasons = GetInt32(reader, 3),
+                Episodes = GetInt32(reader, 4),
                 Owned = true,
-                PlexGuid = string.Empty,
-                TMDbId = null
+                PlexRatingKey = GetString(reader, 5),
+                PlexGuid = GetString(reader, 6),
+                TMDbId = reader.IsDBNull(7) ? null : reader.GetInt32(7),
+                IMDbId = GetString(reader, 8),
+                Studio = GetString(reader, 9),
+                Summary = GetString(reader, 10),
+                PosterPath = GetString(reader, 11),
+                BackgroundPath = GetString(reader, 12),
+                LastSynced = GetString(reader, 13)
             });
         }
 
@@ -71,14 +83,34 @@ public sealed class TVShowRepository
             INSERT INTO TVShows
             (
                 Title,
+                Year,
                 Seasons,
-                Episodes
+                Episodes,
+                PlexRatingKey,
+                PlexGuid,
+                TMDbId,
+                IMDbId,
+                Studio,
+                Summary,
+                PosterPath,
+                BackgroundPath,
+                LastSynced
             )
             VALUES
             (
                 $title,
+                $year,
                 $seasons,
-                $episodes
+                $episodes,
+                $plexRatingKey,
+                $plexGuid,
+                $tmdbId,
+                $imdbId,
+                $studio,
+                $summary,
+                $posterPath,
+                $backgroundPath,
+                $lastSynced
             );
 
             SELECT last_insert_rowid();
@@ -87,7 +119,6 @@ public sealed class TVShowRepository
         AddParameters(command, show);
 
         object? result = await command.ExecuteScalarAsync();
-
         return Convert.ToInt32(result);
     }
 
@@ -105,8 +136,18 @@ public sealed class TVShowRepository
             UPDATE TVShows
             SET
                 Title = $title,
+                Year = $year,
                 Seasons = $seasons,
-                Episodes = $episodes
+                Episodes = $episodes,
+                PlexRatingKey = $plexRatingKey,
+                PlexGuid = $plexGuid,
+                TMDbId = $tmdbId,
+                IMDbId = $imdbId,
+                Studio = $studio,
+                Summary = $summary,
+                PosterPath = $posterPath,
+                BackgroundPath = $backgroundPath,
+                LastSynced = $lastSynced
             WHERE Id = $id;
             """;
 
@@ -124,13 +165,7 @@ public sealed class TVShowRepository
         await connection.OpenAsync();
 
         await using SqliteCommand command = connection.CreateCommand();
-
-        command.CommandText =
-            """
-            DELETE FROM TVShows
-            WHERE Id = $id;
-            """;
-
+        command.CommandText = "DELETE FROM TVShows WHERE Id = $id;";
         command.Parameters.AddWithValue("$id", showId);
 
         await command.ExecuteNonQueryAsync();
@@ -144,15 +179,9 @@ public sealed class TVShowRepository
         await connection.OpenAsync();
 
         await using SqliteCommand command = connection.CreateCommand();
-
-        command.CommandText =
-            """
-            SELECT COUNT(*)
-            FROM TVShows;
-            """;
+        command.CommandText = "SELECT COUNT(*) FROM TVShows;";
 
         object? result = await command.ExecuteScalarAsync();
-
         return Convert.ToInt32(result);
     }
 
@@ -161,7 +190,33 @@ public sealed class TVShowRepository
         TVShow show)
     {
         command.Parameters.AddWithValue("$title", show.Title);
+        command.Parameters.AddWithValue("$year", show.Year);
         command.Parameters.AddWithValue("$seasons", show.Seasons);
         command.Parameters.AddWithValue("$episodes", show.Episodes);
+        command.Parameters.AddWithValue("$plexRatingKey", show.PlexRatingKey);
+        command.Parameters.AddWithValue("$plexGuid", show.PlexGuid);
+        command.Parameters.AddWithValue(
+            "$tmdbId",
+            show.TMDbId.HasValue ? show.TMDbId.Value : DBNull.Value);
+        command.Parameters.AddWithValue("$imdbId", show.IMDbId);
+        command.Parameters.AddWithValue("$studio", show.Studio);
+        command.Parameters.AddWithValue("$summary", show.Summary);
+        command.Parameters.AddWithValue("$posterPath", show.PosterPath);
+        command.Parameters.AddWithValue("$backgroundPath", show.BackgroundPath);
+        command.Parameters.AddWithValue("$lastSynced", show.LastSynced);
+    }
+
+    private static string GetString(SqliteDataReader reader, int ordinal)
+    {
+        return reader.IsDBNull(ordinal)
+            ? string.Empty
+            : reader.GetString(ordinal);
+    }
+
+    private static int GetInt32(SqliteDataReader reader, int ordinal)
+    {
+        return reader.IsDBNull(ordinal)
+            ? 0
+            : reader.GetInt32(ordinal);
     }
 }
