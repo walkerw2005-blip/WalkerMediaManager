@@ -15,14 +15,17 @@ public sealed partial class SettingsPage : Page
 {
     private const string ServerUrlSettingKey = "PlexServerUrl";
     private const string MovieLibraryKeySettingKey = "PlexMovieLibraryKey";
+    private const string TVLibraryKeySettingKey = "PlexTVLibraryKey";
     private const string CredentialResource = "WalkerMediaManager.Plex";
     private const string CredentialUserName = "PlexToken";
 
     private readonly PlexService _plexService = new();
     private readonly PlexMovieSyncService _plexMovieSyncService = new();
+    private readonly PlexTVSyncService _plexTVSyncService = new();
 
     public ObservableCollection<PlexLibrarySection> Libraries { get; } = [];
     public ObservableCollection<PlexLibrarySection> MovieLibraries { get; } = [];
+    public ObservableCollection<PlexLibrarySection> TVLibraries { get; } = [];
 
     public SettingsPage()
     {
@@ -71,7 +74,7 @@ public sealed partial class SettingsPage : Page
             ServerUrlSettingKey] = serverUrl;
 
         SaveToken(token);
-        SaveSelectedMovieLibrary();
+        SaveSelectedLibraries();
 
         ShowConnectionMessage(
             "Plex settings were saved securely on this computer.",
@@ -105,6 +108,7 @@ public sealed partial class SettingsPage : Page
 
             Libraries.Clear();
             MovieLibraries.Clear();
+            TVLibraries.Clear();
 
             foreach (
                 PlexLibrarySection library
@@ -121,10 +125,18 @@ public sealed partial class SettingsPage : Page
                 {
                     MovieLibraries.Add(library);
                 }
+                else if (string.Equals(
+                             library.Type,
+                             "show",
+                             StringComparison.OrdinalIgnoreCase))
+                {
+                    TVLibraries.Add(library);
+                }
             }
 
-            RestoreSelectedMovieLibrary();
+            RestoreSelectedLibraries();
             SyncMoviesButton.IsEnabled = MovieLibraries.Count > 0;
+            SyncTVShowsButton.IsEnabled = TVLibraries.Count > 0;
 
             ShowConnectionMessage(
                 $"{connectionMessage} Found {Libraries.Count} libraries.",
@@ -134,7 +146,9 @@ public sealed partial class SettingsPage : Page
         {
             Libraries.Clear();
             MovieLibraries.Clear();
+            TVLibraries.Clear();
             SyncMoviesButton.IsEnabled = false;
+            SyncTVShowsButton.IsEnabled = false;
 
             ShowConnectionMessage(
                 $"Plex connection failed: {exception.Message}",
@@ -152,7 +166,7 @@ public sealed partial class SettingsPage : Page
     {
         if (MovieLibraryComboBox.SelectedItem is not PlexLibrarySection library)
         {
-            ShowSyncMessage(
+            ShowMovieSyncMessage(
                 "Select the Plex movie library to sync.",
                 InfoBarSeverity.Warning);
             return;
@@ -164,19 +178,19 @@ public sealed partial class SettingsPage : Page
         if (string.IsNullOrWhiteSpace(serverUrl) ||
             string.IsNullOrWhiteSpace(token))
         {
-            ShowSyncMessage(
+            ShowMovieSyncMessage(
                 "Enter the Plex server address and token first.",
                 InfoBarSeverity.Warning);
             return;
         }
 
-        SaveSelectedMovieLibrary();
-        SetSyncBusy(true);
+        SaveSelectedLibraries();
+        SetMovieSyncBusy(true);
 
         try
         {
             Progress<string> progress = new(
-                message => SyncProgressText.Text = message);
+                message => MovieSyncProgressText.Text = message);
 
             PlexSyncResult result =
                 await _plexMovieSyncService.SyncMoviesAsync(
@@ -185,9 +199,9 @@ public sealed partial class SettingsPage : Page
                     library.Key,
                     progress);
 
-            SyncProgressText.Text = "Movie sync complete.";
+            MovieSyncProgressText.Text = "Movie sync complete.";
 
-            ShowSyncMessage(
+            ShowMovieSyncMessage(
                 result.Summary,
                 result.FailedCount > 0
                     ? InfoBarSeverity.Warning
@@ -195,36 +209,109 @@ public sealed partial class SettingsPage : Page
         }
         catch (Exception exception)
         {
-            ShowSyncMessage(
+            ShowMovieSyncMessage(
                 $"Plex movie sync failed: {exception.Message}",
                 InfoBarSeverity.Error);
         }
         finally
         {
-            SetSyncBusy(false);
+            SetMovieSyncBusy(false);
         }
     }
 
-    private void RestoreSelectedMovieLibrary()
+    private async void SyncTVShowsButton_Click(
+        object sender,
+        RoutedEventArgs e)
     {
-        string selectedKey =
-            ApplicationData.Current.LocalSettings.Values[
-                MovieLibraryKeySettingKey]?.ToString()
-            ?? string.Empty;
+        if (TVLibraryComboBox.SelectedItem is not PlexLibrarySection library)
+        {
+            ShowTVSyncMessage(
+                "Select the Plex TV library to sync.",
+                InfoBarSeverity.Warning);
+            return;
+        }
 
-        PlexLibrarySection? selected = MovieLibraries
-            .FirstOrDefault(item => item.Key == selectedKey)
-            ?? MovieLibraries.FirstOrDefault();
+        string serverUrl = ServerUrlBox.Text.Trim();
+        string token = TokenBox.Password.Trim();
 
-        MovieLibraryComboBox.SelectedItem = selected;
+        if (string.IsNullOrWhiteSpace(serverUrl) ||
+            string.IsNullOrWhiteSpace(token))
+        {
+            ShowTVSyncMessage(
+                "Enter the Plex server address and token first.",
+                InfoBarSeverity.Warning);
+            return;
+        }
+
+        SaveSelectedLibraries();
+        SetTVSyncBusy(true);
+
+        try
+        {
+            Progress<string> progress = new(
+                message => TVSyncProgressText.Text = message);
+
+            PlexSyncResult result =
+                await _plexTVSyncService.SyncTVShowsAsync(
+                    serverUrl,
+                    token,
+                    library.Key,
+                    progress);
+
+            TVSyncProgressText.Text = "TV show sync complete.";
+
+            ShowTVSyncMessage(
+                result.Summary,
+                result.FailedCount > 0
+                    ? InfoBarSeverity.Warning
+                    : InfoBarSeverity.Success);
+        }
+        catch (Exception exception)
+        {
+            ShowTVSyncMessage(
+                $"Plex TV show sync failed: {exception.Message}",
+                InfoBarSeverity.Error);
+        }
+        finally
+        {
+            SetTVSyncBusy(false);
+        }
     }
 
-    private void SaveSelectedMovieLibrary()
+    private void RestoreSelectedLibraries()
     {
-        if (MovieLibraryComboBox.SelectedItem is PlexLibrarySection library)
+        ApplicationDataContainer settings =
+            ApplicationData.Current.LocalSettings;
+
+        string movieKey =
+            settings.Values[MovieLibraryKeySettingKey]?.ToString()
+            ?? string.Empty;
+
+        MovieLibraryComboBox.SelectedItem = MovieLibraries
+            .FirstOrDefault(item => item.Key == movieKey)
+            ?? MovieLibraries.FirstOrDefault();
+
+        string tvKey =
+            settings.Values[TVLibraryKeySettingKey]?.ToString()
+            ?? string.Empty;
+
+        TVLibraryComboBox.SelectedItem = TVLibraries
+            .FirstOrDefault(item => item.Key == tvKey)
+            ?? TVLibraries.FirstOrDefault();
+    }
+
+    private void SaveSelectedLibraries()
+    {
+        if (MovieLibraryComboBox.SelectedItem is PlexLibrarySection movieLibrary)
         {
             ApplicationData.Current.LocalSettings.Values[
-                MovieLibraryKeySettingKey] = library.Key;
+                MovieLibraryKeySettingKey] = movieLibrary.Key;
+        }
+
+        if (TVLibraryComboBox.SelectedItem is PlexLibrarySection tvLibrary)
+        {
+            ApplicationData.Current.LocalSettings.Values[
+                TVLibraryKeySettingKey] = tvLibrary.Key;
         }
     }
 
@@ -279,15 +366,31 @@ public sealed partial class SettingsPage : Page
             isBusy ? Visibility.Visible : Visibility.Collapsed;
     }
 
-    private void SetSyncBusy(bool isBusy)
+    private void SetMovieSyncBusy(bool isBusy)
     {
-        SyncMoviesButton.IsEnabled = !isBusy;
+        SyncMoviesButton.IsEnabled = !isBusy && MovieLibraries.Count > 0;
+        MovieLibraryComboBox.IsEnabled = !isBusy;
+        SyncTVShowsButton.IsEnabled = !isBusy && TVLibraries.Count > 0;
+        TVLibraryComboBox.IsEnabled = !isBusy;
+        TestConnectionButton.IsEnabled = !isBusy;
+        SaveSettingsButton.IsEnabled = !isBusy;
+
+        MovieSyncProgressRing.IsActive = isBusy;
+        MovieSyncProgressRing.Visibility =
+            isBusy ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void SetTVSyncBusy(bool isBusy)
+    {
+        SyncTVShowsButton.IsEnabled = !isBusy && TVLibraries.Count > 0;
+        TVLibraryComboBox.IsEnabled = !isBusy;
+        SyncMoviesButton.IsEnabled = !isBusy && MovieLibraries.Count > 0;
         MovieLibraryComboBox.IsEnabled = !isBusy;
         TestConnectionButton.IsEnabled = !isBusy;
         SaveSettingsButton.IsEnabled = !isBusy;
 
-        SyncProgressRing.IsActive = isBusy;
-        SyncProgressRing.Visibility =
+        TVSyncProgressRing.IsActive = isBusy;
+        TVSyncProgressRing.Visibility =
             isBusy ? Visibility.Visible : Visibility.Collapsed;
     }
 
@@ -300,12 +403,21 @@ public sealed partial class SettingsPage : Page
         ConnectionInfoBar.IsOpen = true;
     }
 
-    private void ShowSyncMessage(
+    private void ShowMovieSyncMessage(
         string message,
         InfoBarSeverity severity)
     {
-        SyncInfoBar.Message = message;
-        SyncInfoBar.Severity = severity;
-        SyncInfoBar.IsOpen = true;
+        MovieSyncInfoBar.Message = message;
+        MovieSyncInfoBar.Severity = severity;
+        MovieSyncInfoBar.IsOpen = true;
+    }
+
+    private void ShowTVSyncMessage(
+        string message,
+        InfoBarSeverity severity)
+    {
+        TVSyncInfoBar.Message = message;
+        TVSyncInfoBar.Severity = severity;
+        TVSyncInfoBar.IsOpen = true;
     }
 }

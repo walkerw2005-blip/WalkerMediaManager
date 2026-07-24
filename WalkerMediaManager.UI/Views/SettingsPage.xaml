@@ -106,7 +106,7 @@
                             Click="SyncMoviesButton_Click" />
 
                         <ProgressRing
-                            x:Name="SyncProgressRing"
+                            x:Name="MovieSyncProgressRing"
                             Width="28"
                             Height="28"
                             IsActive="False"
@@ -114,12 +114,65 @@
                     </StackPanel>
 
                     <TextBlock
-                        x:Name="SyncProgressText"
+                        x:Name="MovieSyncProgressText"
                         TextWrapping="Wrap"
                         Opacity="0.7" />
 
                     <InfoBar
-                        x:Name="SyncInfoBar"
+                        x:Name="MovieSyncInfoBar"
+                        IsOpen="False"
+                        IsClosable="True" />
+                </StackPanel>
+            </Border>
+
+            <Border
+                Padding="24"
+                CornerRadius="12"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1">
+
+                <StackPanel Spacing="16">
+                    <TextBlock
+                        Text="Plex TV Show Sync"
+                        FontSize="24"
+                        FontWeight="SemiBold" />
+
+                    <TextBlock
+                        Text="Choose your Plex TV library to import or refresh every series. Existing local shows are matched by Plex ID or title and year."
+                        TextWrapping="Wrap"
+                        Opacity="0.7" />
+
+                    <ComboBox
+                        x:Name="TVLibraryComboBox"
+                        Header="TV Library"
+                        ItemsSource="{x:Bind TVLibraries, Mode=OneWay}"
+                        DisplayMemberPath="DisplayName"
+                        PlaceholderText="Test the connection to discover TV libraries" />
+
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <Button
+                            x:Name="SyncTVShowsButton"
+                            Content="Sync TV Shows from Plex"
+                            Padding="22,10"
+                            IsEnabled="False"
+                            Click="SyncTVShowsButton_Click" />
+
+                        <ProgressRing
+                            x:Name="TVSyncProgressRing"
+                            Width="28"
+                            Height="28"
+                            IsActive="False"
+                            Visibility="Collapsed" />
+                    </StackPanel>
+
+                    <TextBlock
+                        x:Name="TVSyncProgressText"
+                        TextWrapping="Wrap"
+                        Opacity="0.7" />
+
+                    <InfoBar
+                        x:Name="TVSyncInfoBar"
                         IsOpen="False"
                         IsClosable="True" />
                 </StackPanel>

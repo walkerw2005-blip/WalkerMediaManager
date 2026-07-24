@@ -11,7 +11,7 @@ namespace WalkerMediaManager.UI.Services;
 
 public sealed class PlexService
 {
-    private const int MoviePageSize = 200;
+    private const int PageSize = 200;
 
     private readonly HttpClient _httpClient = new()
     {
@@ -116,29 +116,12 @@ public sealed class PlexService
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            string relativePath =
-                $"/library/sections/{Uri.EscapeDataString(librarySectionKey)}/all" +
-                $"?X-Plex-Container-Start={start}" +
-                $"&X-Plex-Container-Size={MoviePageSize}";
-
-            using HttpRequestMessage request = CreateRequest(
+            XDocument document = await GetLibraryPageAsync(
                 serverUrl,
-                relativePath,
-                token);
-
-            using HttpResponseMessage response =
-                await _httpClient.SendAsync(
-                    request,
-                    HttpCompletionOption.ResponseHeadersRead,
-                    cancellationToken);
-
-            response.EnsureSuccessStatusCode();
-
-            string xml = await response.Content.ReadAsStringAsync(
+                token,
+                librarySectionKey,
+                start,
                 cancellationToken);
-
-            XDocument document = XDocument.Parse(xml);
-            XElement? root = document.Root;
 
             List<PlexMovie> page = document
                 .Descendants("Video")
@@ -153,22 +136,7 @@ public sealed class PlexService
 
             movies.AddRange(page);
 
-            int returnedCount = page.Count;
-            int totalSize = ParseIntAttribute(root, "totalSize");
-
-            if (returnedCount == 0)
-            {
-                break;
-            }
-
-            start += returnedCount;
-
-            if (totalSize > 0 && start >= totalSize)
-            {
-                break;
-            }
-
-            if (returnedCount < MoviePageSize)
+            if (ShouldStopPaging(document.Root, page.Count, ref start))
             {
                 break;
             }
@@ -184,6 +152,117 @@ public sealed class PlexService
             .OrderBy(movie => movie.Title)
             .ThenBy(movie => movie.ReleaseYear)
             .ToList();
+    }
+
+    public async Task<IReadOnlyList<PlexTVShow>> GetTVShowsAsync(
+        string serverUrl,
+        string token,
+        string librarySectionKey,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(librarySectionKey))
+        {
+            throw new ArgumentException(
+                "Select a Plex TV library.",
+                nameof(librarySectionKey));
+        }
+
+        List<PlexTVShow> shows = new();
+        int start = 0;
+
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            XDocument document = await GetLibraryPageAsync(
+                serverUrl,
+                token,
+                librarySectionKey,
+                start,
+                cancellationToken);
+
+            List<PlexTVShow> page = document
+                .Descendants("Directory")
+                .Where(element =>
+                    string.Equals(
+                        element.Attribute("type")?.Value,
+                        "show",
+                        StringComparison.OrdinalIgnoreCase))
+                .Select(ParseTVShow)
+                .Where(show => !string.IsNullOrWhiteSpace(show.Title))
+                .ToList();
+
+            shows.AddRange(page);
+
+            if (ShouldStopPaging(document.Root, page.Count, ref start))
+            {
+                break;
+            }
+        }
+
+        return shows
+            .GroupBy(
+                show => string.IsNullOrWhiteSpace(show.PlexGuid)
+                    ? $"{show.Title}|{show.Year}|{show.PlexRatingKey}"
+                    : show.PlexGuid,
+                StringComparer.OrdinalIgnoreCase)
+            .Select(group => group.First())
+            .OrderBy(show => show.Title)
+            .ThenBy(show => show.Year)
+            .ToList();
+    }
+
+    private async Task<XDocument> GetLibraryPageAsync(
+        string serverUrl,
+        string token,
+        string librarySectionKey,
+        int start,
+        CancellationToken cancellationToken)
+    {
+        string relativePath =
+            $"/library/sections/{Uri.EscapeDataString(librarySectionKey)}/all" +
+            $"?X-Plex-Container-Start={start}" +
+            $"&X-Plex-Container-Size={PageSize}";
+
+        using HttpRequestMessage request = CreateRequest(
+            serverUrl,
+            relativePath,
+            token);
+
+        using HttpResponseMessage response =
+            await _httpClient.SendAsync(
+                request,
+                HttpCompletionOption.ResponseHeadersRead,
+                cancellationToken);
+
+        response.EnsureSuccessStatusCode();
+
+        string xml = await response.Content.ReadAsStringAsync(
+            cancellationToken);
+
+        return XDocument.Parse(xml);
+    }
+
+    private static bool ShouldStopPaging(
+        XElement? root,
+        int returnedCount,
+        ref int start)
+    {
+        if (returnedCount == 0)
+        {
+            return true;
+        }
+
+        start += returnedCount;
+
+        int totalSize = ParseIntAttribute(root, "totalSize");
+
+        if (totalSize > 0 && start >= totalSize)
+        {
+            return true;
+        }
+
+        return returnedCount < PageSize;
     }
 
     private static PlexMovie ParseMovie(XElement element)
@@ -227,6 +306,35 @@ public sealed class PlexService
         };
     }
 
+    private static PlexTVShow ParseTVShow(XElement element)
+    {
+        int.TryParse(element.Attribute("year")?.Value, out int year);
+        int seasons = ParseIntAttribute(element, "childCount");
+        int episodes = ParseIntAttribute(element, "leafCount");
+
+        return new PlexTVShow
+        {
+            PlexRatingKey = element.Attribute("ratingKey")?.Value
+                ?? element.Attribute("key")?.Value
+                ?? string.Empty,
+            PlexGuid = element.Attribute("guid")?.Value
+                ?? string.Empty,
+            Title = element.Attribute("title")?.Value
+                ?? string.Empty,
+            Year = year,
+            Seasons = seasons,
+            Episodes = episodes,
+            Studio = element.Attribute("studio")?.Value
+                ?? string.Empty,
+            Summary = element.Attribute("summary")?.Value
+                ?? string.Empty,
+            PosterPath = element.Attribute("thumb")?.Value
+                ?? string.Empty,
+            BackgroundPath = element.Attribute("art")?.Value
+                ?? string.Empty
+        };
+    }
+
     private static int ParseIntAttribute(
         XElement? element,
         string attributeName)
@@ -256,7 +364,7 @@ public sealed class PlexService
 
         request.Headers.Add("X-Plex-Token", token.Trim());
         request.Headers.Add("X-Plex-Product", "Walker Media Manager");
-        request.Headers.Add("X-Plex-Version", "0.4.0");
+        request.Headers.Add("X-Plex-Version", "0.4.0.2");
         request.Headers.Add("X-Plex-Client-Identifier", "WalkerMediaManager-Windows");
         request.Headers.Add("Accept", "application/xml");
 
