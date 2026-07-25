@@ -72,6 +72,14 @@
             </NavigationViewItem>
 
             <NavigationViewItem
+                Content="Purchase History"
+                Tag="purchases">
+                <NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xE8C7;" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+
+            <NavigationViewItem
                 Content="Reports"
                 Tag="reports">
                 <NavigationViewItem.Icon>

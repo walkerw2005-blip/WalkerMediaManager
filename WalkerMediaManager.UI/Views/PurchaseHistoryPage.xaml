@@ -1,0 +1,191 @@
+<Page
+    x:Class="WalkerMediaManager.UI.Views.PurchaseHistoryPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:models="using:WalkerMediaManager.UI.Models"
+    Loaded="Page_Loaded">
+
+    <Grid>
+        <ScrollViewer>
+            <Grid Padding="36" RowSpacing="22">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Purchase History" Style="{ThemeResource TitleTextBlockStyle}" />
+                        <TextBlock Text="Review where, when, and how much you paid for owned copies."
+                                   Style="{ThemeResource SubtitleTextBlockStyle}" />
+                    </StackPanel>
+                    <Button Grid.Column="1" Content="Refresh" Click="RefreshButton_Click"
+                            VerticalAlignment="Center" />
+                </Grid>
+
+                <InfoBar x:Name="StatusInfoBar" Grid.Row="1" IsOpen="False" IsClosable="True" />
+
+                <Grid Grid.Row="2" ColumnSpacing="14">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Padding="18" CornerRadius="12"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Owned copies" Opacity="0.7" />
+                            <TextBlock x:Name="PurchaseCountText" Text="0" FontSize="28" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="1" Padding="18" CornerRadius="12"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Recorded spending" Opacity="0.7" />
+                            <TextBlock x:Name="SpendingText" Text="$0.00" FontSize="28" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="2" Padding="18" CornerRadius="12"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Average price" Opacity="0.7" />
+                            <TextBlock x:Name="AveragePriceText" Text="$0.00" FontSize="28" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="3" Padding="18" CornerRadius="12"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Stores" Opacity="0.7" />
+                            <TextBlock x:Name="StoreCountText" Text="0" FontSize="28" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="4" Padding="18" CornerRadius="12"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Missing purchase date" Opacity="0.7" />
+                            <TextBlock x:Name="MissingDateText" Text="0" FontSize="28" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <Border Grid.Row="3" Padding="18" CornerRadius="12"
+                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                    <Grid ColumnSpacing="12" RowSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="SearchTextBox"
+                                 PlaceholderText="Search title, format, edition, store, or location"
+                                 TextChanged="Filter_Changed" />
+                        <ComboBox x:Name="StoreCombo" Grid.Column="1" Header="Store"
+                                  SelectionChanged="Filter_Changed" />
+                        <ComboBox x:Name="FormatCombo" Grid.Column="2" Header="Format"
+                                  SelectionChanged="Filter_Changed" />
+                        <ComboBox x:Name="MediaTypeCombo" Grid.Column="3" Header="Type"
+                                  SelectionChanged="Filter_Changed">
+                            <x:String>All types</x:String>
+                            <x:String>Physical</x:String>
+                            <x:String>Digital</x:String>
+                        </ComboBox>
+                        <ComboBox x:Name="SortCombo" Grid.Column="4" Header="Sort"
+                                  SelectionChanged="Filter_Changed">
+                            <x:String>Date newest</x:String>
+                            <x:String>Date oldest</x:String>
+                            <x:String>Price high-low</x:String>
+                            <x:String>Price low-high</x:String>
+                            <x:String>Title A-Z</x:String>
+                            <x:String>Store A-Z</x:String>
+                        </ComboBox>
+                    </Grid>
+                </Border>
+
+                <StackPanel Grid.Row="4" Spacing="14">
+                    <Grid>
+                        <TextBlock x:Name="ResultSummaryText" Text="0 purchase records"
+                                   FontSize="18" FontWeight="SemiBold" />
+                        <ProgressRing x:Name="LoadingRing" Width="28" Height="28"
+                                      IsActive="False" HorizontalAlignment="Right" />
+                    </Grid>
+
+                    <TextBlock x:Name="EmptyText" Text="No purchase records match the current filters."
+                               Opacity="0.7" Visibility="Collapsed" />
+
+                    <ListView x:Name="PurchaseList" SelectionMode="None">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="models:PurchaseHistoryRow">
+                                <Border Padding="18" Margin="0,0,0,10" CornerRadius="12"
+                                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                                    <Grid ColumnSpacing="18">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="2.2*" />
+                                            <ColumnDefinition Width="1.4*" />
+                                            <ColumnDefinition Width="1.2*" />
+                                            <ColumnDefinition Width="1.1*" />
+                                            <ColumnDefinition Width="1.2*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Text="{x:Bind MovieDisplay}" FontSize="18" FontWeight="SemiBold" />
+                                            <TextBlock Text="{x:Bind FormatDisplay}" Opacity="0.75" />
+                                            <TextBlock Text="{x:Bind PackagingDisplay}" Opacity="0.65" />
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="1" Spacing="4">
+                                            <TextBlock Text="Store" Opacity="0.6" />
+                                            <TextBlock Text="{x:Bind StoreDisplay}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="2" Spacing="4">
+                                            <TextBlock Text="Purchase date" Opacity="0.6" />
+                                            <TextBlock Text="{x:Bind DateDisplay}" FontWeight="SemiBold" />
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="3" Spacing="4">
+                                            <TextBlock Text="Price" Opacity="0.6" />
+                                            <TextBlock Text="{x:Bind PriceDisplay}" FontWeight="SemiBold" />
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="4" Spacing="4">
+                                            <TextBlock Text="Location / type" Opacity="0.6" />
+                                            <TextBlock Text="{x:Bind LocationDisplay}" TextWrapping="Wrap" />
+                                            <TextBlock Text="{x:Bind MediaTypeDisplay}" Opacity="0.7" />
+                                        </StackPanel>
+
+                                        <Button Grid.Column="5" Content="Open movie" Tag="{x:Bind MovieId}"
+                                                Click="OpenMovieButton_Click" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</Page>
