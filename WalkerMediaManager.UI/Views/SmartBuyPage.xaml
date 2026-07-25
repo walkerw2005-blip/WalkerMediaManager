@@ -1,7 +1,8 @@
 <Page
     x:Class="WalkerMediaManager.UI.Views.SmartBuyPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:WalkerMediaManager.UI.Controls">
 
     <Grid Padding="40" RowSpacing="24">
         <Grid.RowDefinitions>
@@ -11,12 +12,9 @@
         </Grid.RowDefinitions>
 
         <StackPanel Spacing="6">
+            <TextBlock Text="Smart Buy 2.0" Style="{ThemeResource TitleTextBlockStyle}" />
             <TextBlock
-                Text="Smart Buy"
-                Style="{ThemeResource TitleTextBlockStyle}" />
-
-            <TextBlock
-                Text="Search before you buy and avoid duplicate purchases."
+                Text="Check ownership, formats, locations, and upgrade opportunities before you buy."
                 Style="{ThemeResource SubtitleTextBlockStyle}" />
         </StackPanel>
 
@@ -34,9 +32,11 @@
                     FontSize="22"
                     FontWeight="SemiBold" />
 
-                <Grid ColumnSpacing="12">
+                <Grid ColumnSpacing="12" RowSpacing="12">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="180" />
+                        <ColumnDefinition Width="150" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
@@ -47,33 +47,58 @@
                         PlaceholderText="For example: Top Gun"
                         KeyDown="SearchBox_KeyDown" />
 
-                    <Button
+                    <ComboBox
+                        x:Name="PlannedFormatComboBox"
                         Grid.Column="1"
-                        Content="Search"
-                        Padding="26,10"
+                        Header="Planned format"
+                        PlaceholderText="Any format"
+                        SelectionChanged="PlannedFormatComboBox_SelectionChanged">
+                        <x:String>4K UHD</x:String>
+                        <x:String>Blu-ray</x:String>
+                        <x:String>3D Blu-ray</x:String>
+                        <x:String>DVD</x:String>
+                        <x:String>Digital</x:String>
+                        <x:String>VHS</x:String>
+                        <x:String>LaserDisc</x:String>
+                    </ComboBox>
+
+                    <NumberBox
+                        x:Name="PlannedPriceNumberBox"
+                        Grid.Column="2"
+                        Header="Price"
+                        PlaceholderText="$0.00"
+                        Minimum="0"
+                        SpinButtonPlacementMode="Compact" />
+
+                    <Button
+                        Grid.Column="3"
+                        Content="Check purchase"
+                        Padding="22,10"
                         VerticalAlignment="Bottom"
                         Click="SearchButton_Click" />
 
                     <Button
-                        Grid.Column="2"
+                        Grid.Column="4"
                         Content="Clear"
                         Padding="18,10"
                         VerticalAlignment="Bottom"
                         Click="ClearButton_Click" />
                 </Grid>
 
-                <ProgressRing
-                    x:Name="SearchProgressRing"
-                    Width="28"
-                    Height="28"
-                    IsActive="False"
-                    Visibility="Collapsed"
-                    HorizontalAlignment="Left" />
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <ProgressRing
+                        x:Name="SearchProgressRing"
+                        Width="28"
+                        Height="28"
+                        IsActive="False"
+                        Visibility="Collapsed" />
+                    <TextBlock
+                        x:Name="SearchStatusText"
+                        VerticalAlignment="Center"
+                        Opacity="0.7" />
+                </StackPanel>
 
-                <InfoBar
-                    x:Name="SearchInfoBar"
-                    IsOpen="False"
-                    IsClosable="True" />
+                <InfoBar x:Name="SearchInfoBar" IsOpen="False" IsClosable="True" />
 
                 <Button
                     x:Name="AddToWishlistButton"
@@ -85,10 +110,7 @@
             </StackPanel>
         </Border>
 
-        <Grid
-            Grid.Row="2"
-            RowSpacing="16">
-
+        <Grid Grid.Row="2" RowSpacing="16">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -100,11 +122,7 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <TextBlock
-                    Text="Search Results"
-                    FontSize="22"
-                    FontWeight="SemiBold" />
-
+                <TextBlock Text="Purchase check" FontSize="24" FontWeight="SemiBold" />
                 <TextBlock
                     x:Name="ResultCountText"
                     Grid.Column="1"
@@ -118,23 +136,16 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Spacing="12">
-
-                    <FontIcon
-                        Glyph="&#xE721;"
-                        FontSize="48"
-                        Opacity="0.55"
-                        HorizontalAlignment="Center" />
-
+                    <FontIcon Glyph="&#xE7BF;" FontSize="48" Opacity="0.55" HorizontalAlignment="Center" />
                     <TextBlock
-                        Text="Search your collection"
+                        Text="Search before you buy"
                         FontSize="22"
                         FontWeight="SemiBold"
                         HorizontalAlignment="Center" />
-
                     <TextBlock
-                        Text="Enter a movie or TV-show title to see whether you already own it."
+                        Text="Enter a title and optionally select the format you are considering."
                         TextWrapping="Wrap"
-                        MaxWidth="500"
+                        MaxWidth="520"
                         TextAlignment="Center"
                         Opacity="0.7" />
                 </StackPanel>
@@ -144,58 +155,64 @@
                     ItemsSource="{x:Bind Results, Mode=OneWay}"
                     SelectionMode="None"
                     Visibility="Collapsed">
-
                     <ListView.ItemTemplate>
                         <DataTemplate>
                             <Border
-                                Margin="0,0,0,12"
+                                Margin="0,0,0,14"
                                 Padding="20"
-                                CornerRadius="10"
+                                CornerRadius="12"
                                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1">
-
                                 <Grid ColumnSpacing="20">
                                     <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="100" />
                                         <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="280" />
                                     </Grid.ColumnDefinitions>
 
-                                    <StackPanel Spacing="5">
-                                        <TextBlock
-                                            Text="{Binding Title}"
-                                            FontSize="21"
-                                            FontWeight="SemiBold" />
+                                    <Border Width="88" Height="132" CornerRadius="6" Background="{ThemeResource ControlFillColorSecondaryBrush}">
+                                        <controls:CachedArtworkImage
+                                            ArtworkPath="{Binding PosterPath}"
+                                            CacheKey="{Binding CacheKey}" />
+                                    </Border>
 
-                                        <TextBlock
-                                            Text="{Binding MediaType}"
-                                            Opacity="0.75" />
-
-                                        <TextBlock
-                                            Text="{Binding Details}"
-                                            Opacity="0.65" />
+                                    <StackPanel Grid.Column="1" Spacing="6" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Title}" FontSize="21" FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding YearDisplay}" Opacity="0.75" />
+                                        <TextBlock Text="{Binding Details}" Opacity="0.7" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding OwnershipSummary}" FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding FormatSummary}" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding LocationSummary}" Opacity="0.7" TextWrapping="Wrap" />
                                     </StackPanel>
 
-                                    <StackPanel
-                                        Grid.Column="1"
-                                        Spacing="4"
-                                        VerticalAlignment="Center"
-                                        HorizontalAlignment="Right">
-
-                                        <FontIcon
-                                            Glyph="&#xE73E;"
-                                            FontSize="24"
-                                            HorizontalAlignment="Center" />
-
-                                        <TextBlock
-                                            Text="{Binding OwnershipStatus}"
-                                            FontWeight="SemiBold" />
-
-                                        <TextBlock
-                                            Text="Do not buy another copy"
-                                            FontSize="12"
-                                            Opacity="0.65" />
-                                    </StackPanel>
+                                    <Border
+                                        Grid.Column="2"
+                                        Padding="16"
+                                        CornerRadius="10"
+                                        Background="{ThemeResource ControlFillColorSecondaryBrush}"
+                                        VerticalAlignment="Stretch">
+                                        <StackPanel Spacing="8" VerticalAlignment="Center">
+                                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                                <FontIcon
+                                                    Glyph="{Binding RecommendationGlyph}"
+                                                    FontSize="24"
+                                                    Foreground="{Binding RecommendationColor}" />
+                                                <TextBlock
+                                                    Text="{Binding Recommendation}"
+                                                    FontSize="18"
+                                                    FontWeight="SemiBold"
+                                                    VerticalAlignment="Center" />
+                                            </StackPanel>
+                                            <TextBlock
+                                                Text="{Binding RecommendationDetail}"
+                                                TextWrapping="Wrap"
+                                                Opacity="0.8" />
+                                            <TextBlock
+                                                Text="{Binding PlannedPriceDisplay}"
+                                                FontWeight="SemiBold" />
+                                        </StackPanel>
+                                    </Border>
                                 </Grid>
                             </Border>
                         </DataTemplate>
