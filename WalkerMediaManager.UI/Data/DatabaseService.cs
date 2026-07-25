@@ -7,7 +7,7 @@ namespace WalkerMediaManager.UI.Data;
 
 public static class DatabaseService
 {
-    private const int CurrentDatabaseVersion = 3;
+    private const int CurrentDatabaseVersion = 4;
 
     public static string DatabasePath =>
         Path.Combine(
@@ -54,6 +54,13 @@ public static class DatabaseService
             {
                 ApplyVersion3Migration(connection, transaction);
                 SetDatabaseVersion(connection, transaction, 3);
+                version = 3;
+            }
+
+            if (version < 4)
+            {
+                ApplyVersion4Migration(connection, transaction);
+                SetDatabaseVersion(connection, transaction, 4);
             }
 
             EnsureIndexes(connection, transaction);
@@ -236,6 +243,36 @@ public static class DatabaseService
             """);
     }
 
+
+    private static void ApplyVersion4Migration(
+        SqliteConnection connection,
+        SqliteTransaction transaction)
+    {
+        ExecuteNonQuery(
+            connection,
+            transaction,
+            """
+            CREATE TABLE IF NOT EXISTS StorageLocations
+            (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                Name TEXT NOT NULL COLLATE NOCASE UNIQUE,
+                Room TEXT NOT NULL DEFAULT '',
+                Area TEXT NOT NULL DEFAULT '',
+                Shelf TEXT NOT NULL DEFAULT '',
+                Bin TEXT NOT NULL DEFAULT '',
+                Notes TEXT NOT NULL DEFAULT '',
+                IsActive INTEGER NOT NULL DEFAULT 1,
+                CreatedAt TEXT NOT NULL DEFAULT (datetime('now'))
+            );
+
+            INSERT OR IGNORE INTO StorageLocations (Name, IsActive)
+            SELECT DISTINCT TRIM(Location), 1
+            FROM OwnedCopies
+            WHERE Location IS NOT NULL
+              AND TRIM(Location) <> '';
+            """);
+    }
+
     private static void EnsureIndexes(
         SqliteConnection connection,
         SqliteTransaction transaction)
@@ -267,6 +304,12 @@ public static class DatabaseService
 
             CREATE INDEX IF NOT EXISTS IX_OwnedCopies_Format
                 ON OwnedCopies (Format);
+
+            CREATE INDEX IF NOT EXISTS IX_StorageLocations_Name
+                ON StorageLocations (Name);
+
+            CREATE INDEX IF NOT EXISTS IX_StorageLocations_IsActive
+                ON StorageLocations (IsActive);
             """);
     }
 

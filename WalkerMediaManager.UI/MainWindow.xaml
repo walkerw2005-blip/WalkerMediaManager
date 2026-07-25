@@ -64,6 +64,14 @@
             </NavigationViewItem>
 
             <NavigationViewItem
+                Content="Storage Locations"
+                Tag="locations">
+                <NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xE8B7;" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+
+            <NavigationViewItem
                 Content="Reports"
                 Tag="reports">
                 <NavigationViewItem.Icon>

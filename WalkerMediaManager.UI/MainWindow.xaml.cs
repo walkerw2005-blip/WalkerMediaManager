@@ -41,6 +41,7 @@ public sealed partial class MainWindow : Window
             "tvshows" => typeof(TvShowsPage),
             "collections" => typeof(CollectionsPage),
             "wishlist" => typeof(WishlistPage),
+            "locations" => typeof(StorageLocationsPage),
             "reports" => typeof(ReportsPage),
             _ => null
         };

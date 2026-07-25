@@ -1,0 +1,118 @@
+<Page
+    x:Class="WalkerMediaManager.UI.Views.StorageLocationsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:models="using:WalkerMediaManager.UI.Models">
+
+    <Grid>
+        <ScrollViewer>
+            <Grid Padding="36" RowSpacing="22">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Storage Locations" Style="{ThemeResource TitleTextBlockStyle}" />
+                        <TextBlock Text="Organize shelves, cabinets, bins, and rooms used by your collection."
+                                   Style="{ThemeResource SubtitleTextBlockStyle}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                        <Button Content="Import existing" Click="ImportExistingButton_Click" />
+                        <Button Content="Add location" Click="AddLocationButton_Click" />
+                    </StackPanel>
+                </Grid>
+
+                <InfoBar x:Name="StatusInfoBar" Grid.Row="1" IsOpen="False" IsClosable="True" />
+
+                <Border Grid.Row="2" Padding="18" CornerRadius="12"
+                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="SearchTextBox" PlaceholderText="Search locations, rooms, shelves, or notes"
+                                 TextChanged="SearchTextBox_TextChanged" />
+                        <CheckBox x:Name="ShowInactiveCheckBox" Grid.Column="1" Content="Show inactive"
+                                  VerticalAlignment="Center" Click="ShowInactiveCheckBox_Click" />
+                        <Button Grid.Column="2" Content="Refresh" Click="RefreshButton_Click" />
+                    </Grid>
+                </Border>
+
+                <StackPanel Grid.Row="3" Spacing="14">
+                    <Grid>
+                        <TextBlock x:Name="SummaryText" Text="0 locations" FontSize="18" FontWeight="SemiBold" />
+                        <ProgressRing x:Name="LoadingRing" IsActive="False" Width="28" Height="28"
+                                      HorizontalAlignment="Right" />
+                    </Grid>
+
+                    <TextBlock x:Name="EmptyText" Text="No storage locations have been added yet."
+                               Opacity="0.7" Visibility="Collapsed" />
+
+                    <ListView x:Name="LocationsList" SelectionMode="None">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="models:StorageLocation">
+                                <Border Padding="18" Margin="0,0,0,10" CornerRadius="12"
+                                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                                    <Grid ColumnSpacing="18">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Spacing="5">
+                                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                                <TextBlock Text="{x:Bind DisplayName}" FontSize="20" FontWeight="SemiBold" />
+                                                <Border Padding="8,3" CornerRadius="6"
+                                                        Background="{ThemeResource ControlFillColorSecondaryBrush}">
+                                                    <TextBlock Text="{x:Bind StatusDisplay}" />
+                                                </Border>
+                                            </StackPanel>
+                                            <TextBlock Text="{x:Bind Details}" Opacity="0.75" />
+                                            <TextBlock Text="{x:Bind CopyCountDisplay}" FontWeight="SemiBold" />
+                                            <TextBlock Text="{x:Bind Notes}" TextWrapping="Wrap" Opacity="0.7" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Top">
+                                            <Button Content="Edit" Tag="{x:Bind Id}" Click="EditLocationButton_Click" />
+                                            <Button Content="Delete" Tag="{x:Bind Id}" Click="DeleteLocationButton_Click" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+
+        <ContentDialog x:Name="LocationDialog"
+                       Title="Storage location"
+                       PrimaryButtonText="Save"
+                       CloseButtonText="Cancel"
+                       DefaultButton="Primary"
+                       PrimaryButtonClick="LocationDialog_PrimaryButtonClick">
+            <ScrollViewer MaxHeight="560">
+                <StackPanel Spacing="12" MinWidth="430">
+                    <InfoBar x:Name="DialogInfoBar" IsOpen="False" IsClosable="True" />
+                    <TextBox x:Name="NameTextBox" Header="Location name" PlaceholderText="Example: Living Room Shelf 2" />
+                    <TextBox x:Name="RoomTextBox" Header="Room" PlaceholderText="Living Room" />
+                    <TextBox x:Name="AreaTextBox" Header="Cabinet / area" PlaceholderText="Media cabinet" />
+                    <TextBox x:Name="ShelfTextBox" Header="Shelf" PlaceholderText="Shelf 2" />
+                    <TextBox x:Name="BinTextBox" Header="Bin / box" PlaceholderText="Bin A" />
+                    <TextBox x:Name="NotesTextBox" Header="Notes" AcceptsReturn="True" TextWrapping="Wrap" Height="90" />
+                    <CheckBox x:Name="ActiveCheckBox" Content="Location is active" IsChecked="True" />
+                </StackPanel>
+            </ScrollViewer>
+        </ContentDialog>
+    </Grid>
+</Page>
