@@ -12,27 +12,13 @@ public sealed class PlexMovieSyncService
 {
     private readonly PlexService _plexService = new();
 
-    public async Task<PlexSyncResult> SyncMoviesAsync(
-        string serverUrl,
-        string token,
-        string librarySectionKey,
-        IProgress<string>? progress = null,
-        CancellationToken cancellationToken = default)
+    public async Task<PlexSyncResult> SyncMoviesAsync(string serverUrl, string token, string librarySectionKey,
+        IProgress<string>? progress = null, CancellationToken cancellationToken = default)
     {
-        IReadOnlyList<PlexMovie> plexMovies =
-            await _plexService.GetMoviesAsync(
-                serverUrl,
-                token,
-                librarySectionKey,
-                cancellationToken);
-
+        IReadOnlyList<PlexMovie> plexMovies = await _plexService.GetMoviesAsync(serverUrl, token, librarySectionKey, cancellationToken);
         PlexSyncResult result = new();
-
-        await using SqliteConnection connection =
-            new($"Data Source={DatabaseService.DatabasePath}");
-
+        await using SqliteConnection connection = new($"Data Source={DatabaseService.DatabasePath}");
         await connection.OpenAsync(cancellationToken);
-
         using SqliteTransaction transaction = connection.BeginTransaction();
 
         try
@@ -40,213 +26,113 @@ public sealed class PlexMovieSyncService
             for (int index = 0; index < plexMovies.Count; index++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-
-                PlexMovie plexMovie = plexMovies[index];
-                progress?.Report(
-                    $"Syncing {index + 1} of {plexMovies.Count}: {plexMovie.Title}");
-
+                PlexMovie movie = plexMovies[index];
+                progress?.Report($"Syncing {index + 1} of {plexMovies.Count}: {movie.Title}");
                 try
                 {
-                    int? existingId = await FindByPlexGuidAsync(
-                        connection,
-                        transaction,
-                        plexMovie.PlexGuid,
-                        cancellationToken);
-
-                    if (existingId.HasValue)
+                    int? id = await FindByPlexGuidAsync(connection, transaction, movie.PlexGuid, cancellationToken)
+                              ?? await FindByTitleAndYearAsync(connection, transaction, movie.Title, movie.ReleaseYear, cancellationToken);
+                    if (id.HasValue)
                     {
-                        await UpdateFromPlexAsync(
-                            connection,
-                            transaction,
-                            existingId.Value,
-                            plexMovie,
-                            cancellationToken);
-
-                        result.UpdatedCount++;
-                        continue;
+                        await UpdateAsync(connection, transaction, id.Value, movie, cancellationToken);
+                        if (!string.IsNullOrWhiteSpace(movie.PlexGuid)) result.UpdatedCount++; else result.MatchedCount++;
                     }
-
-                    existingId = await FindByTitleAndYearAsync(
-                        connection,
-                        transaction,
-                        plexMovie.Title,
-                        plexMovie.ReleaseYear,
-                        cancellationToken);
-
-                    if (existingId.HasValue)
+                    else
                     {
-                        await MatchExistingMovieAsync(
-                            connection,
-                            transaction,
-                            existingId.Value,
-                            plexMovie,
-                            cancellationToken);
-
-                        result.MatchedCount++;
-                        continue;
+                        await InsertAsync(connection, transaction, movie, cancellationToken);
+                        result.AddedCount++;
                     }
-
-                    await InsertMovieAsync(
-                        connection,
-                        transaction,
-                        plexMovie,
-                        cancellationToken);
-
-                    result.AddedCount++;
                 }
-                catch
-                {
-                    result.FailedCount++;
-                }
+                catch { result.FailedCount++; }
             }
-
             transaction.Commit();
         }
-        catch
-        {
-            transaction.Rollback();
-            throw;
-        }
+        catch { transaction.Rollback(); throw; }
 
         return result;
     }
 
-    private static async Task<int?> FindByPlexGuidAsync(
-        SqliteConnection connection,
-        SqliteTransaction transaction,
-        string plexGuid,
-        CancellationToken cancellationToken)
+    private static async Task<int?> FindByPlexGuidAsync(SqliteConnection c, SqliteTransaction t, string guid, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(plexGuid))
-        {
-            return null;
-        }
-
-        await using SqliteCommand command = connection.CreateCommand();
-        command.Transaction = transaction;
-        command.CommandText =
-            "SELECT Id FROM Movies WHERE PlexGuid = $plexGuid LIMIT 1;";
-        command.Parameters.AddWithValue("$plexGuid", plexGuid);
-
-        object? value = await command.ExecuteScalarAsync(cancellationToken);
+        if (string.IsNullOrWhiteSpace(guid)) return null;
+        await using SqliteCommand cmd = c.CreateCommand();
+        cmd.Transaction = t;
+        cmd.CommandText = "SELECT Id FROM Movies WHERE PlexGuid = $guid LIMIT 1;";
+        cmd.Parameters.AddWithValue("$guid", guid);
+        object? value = await cmd.ExecuteScalarAsync(ct);
         return value is null or DBNull ? null : Convert.ToInt32(value);
     }
 
-    private static async Task<int?> FindByTitleAndYearAsync(
-        SqliteConnection connection,
-        SqliteTransaction transaction,
-        string title,
-        int releaseYear,
-        CancellationToken cancellationToken)
+    private static async Task<int?> FindByTitleAndYearAsync(SqliteConnection c, SqliteTransaction t, string title, int year, CancellationToken ct)
     {
-        await using SqliteCommand command = connection.CreateCommand();
-        command.Transaction = transaction;
-        command.CommandText =
-            """
-            SELECT Id
-            FROM Movies
+        await using SqliteCommand cmd = c.CreateCommand();
+        cmd.Transaction = t;
+        cmd.CommandText = """
+            SELECT Id FROM Movies
             WHERE LOWER(TRIM(Title)) = LOWER(TRIM($title))
-              AND ($releaseYear = 0 OR ReleaseYear = 0 OR ReleaseYear = $releaseYear)
-            ORDER BY CASE WHEN ReleaseYear = $releaseYear THEN 0 ELSE 1 END
-            LIMIT 1;
+              AND ($year = 0 OR ReleaseYear = 0 OR ReleaseYear = $year)
+            ORDER BY CASE WHEN ReleaseYear = $year THEN 0 ELSE 1 END LIMIT 1;
             """;
-        command.Parameters.AddWithValue("$title", title);
-        command.Parameters.AddWithValue("$releaseYear", releaseYear);
-
-        object? value = await command.ExecuteScalarAsync(cancellationToken);
+        cmd.Parameters.AddWithValue("$title", title);
+        cmd.Parameters.AddWithValue("$year", year);
+        object? value = await cmd.ExecuteScalarAsync(ct);
         return value is null or DBNull ? null : Convert.ToInt32(value);
     }
 
-    private static async Task UpdateFromPlexAsync(
-        SqliteConnection connection,
-        SqliteTransaction transaction,
-        int movieId,
-        PlexMovie movie,
-        CancellationToken cancellationToken)
+    private static async Task UpdateAsync(SqliteConnection c, SqliteTransaction t, int id, PlexMovie movie, CancellationToken ct)
     {
-        await using SqliteCommand command = connection.CreateCommand();
-        command.Transaction = transaction;
-        command.CommandText =
-            """
-            UPDATE Movies
-            SET Title = $title,
-                ReleaseYear = CASE WHEN $year > 0 THEN $year ELSE ReleaseYear END,
-                Rating = CASE WHEN TRIM($rating) <> '' THEN $rating ELSE Rating END,
-                Runtime = CASE WHEN $runtime > 0 THEN $runtime ELSE Runtime END,
-                Genre = CASE WHEN TRIM($genre) <> '' THEN $genre ELSE Genre END,
-                Director = CASE WHEN TRIM($director) <> '' THEN $director ELSE Director END,
-                PlexGuid = $plexGuid
-            WHERE Id = $id;
+        await using SqliteCommand cmd = c.CreateCommand();
+        cmd.Transaction = t;
+        cmd.CommandText = """
+            UPDATE Movies SET
+                Title=$title,
+                ReleaseYear=CASE WHEN $year>0 THEN $year ELSE ReleaseYear END,
+                Rating=CASE WHEN TRIM($rating)<>'' THEN $rating ELSE Rating END,
+                Runtime=CASE WHEN $runtime>0 THEN $runtime ELSE Runtime END,
+                Genre=CASE WHEN TRIM($genre)<>'' THEN $genre ELSE Genre END,
+                Director=CASE WHEN TRIM($director)<>'' THEN $director ELSE Director END,
+                PlexRatingKey=CASE WHEN TRIM($key)<>'' THEN $key ELSE PlexRatingKey END,
+                PlexGuid=CASE WHEN TRIM($guid)<>'' THEN $guid ELSE PlexGuid END,
+                Studio=CASE WHEN TRIM($studio)<>'' THEN $studio ELSE Studio END,
+                Summary=CASE WHEN TRIM($summary)<>'' THEN $summary ELSE Summary END,
+                PosterPath=CASE WHEN TRIM($poster)<>'' THEN $poster ELSE PosterPath END,
+                BackgroundPath=CASE WHEN TRIM($background)<>'' THEN $background ELSE BackgroundPath END,
+                LastSynced=$synced
+            WHERE Id=$id;
             """;
-        AddParameters(command, movie);
-        command.Parameters.AddWithValue("$id", movieId);
-        await command.ExecuteNonQueryAsync(cancellationToken);
+        AddParameters(cmd, movie);
+        cmd.Parameters.AddWithValue("$id", id);
+        await cmd.ExecuteNonQueryAsync(ct);
     }
 
-    private static async Task MatchExistingMovieAsync(
-        SqliteConnection connection,
-        SqliteTransaction transaction,
-        int movieId,
-        PlexMovie movie,
-        CancellationToken cancellationToken)
+    private static async Task InsertAsync(SqliteConnection c, SqliteTransaction t, PlexMovie movie, CancellationToken ct)
     {
-        await UpdateFromPlexAsync(
-            connection,
-            transaction,
-            movieId,
-            movie,
-            cancellationToken);
-    }
-
-    private static async Task InsertMovieAsync(
-        SqliteConnection connection,
-        SqliteTransaction transaction,
-        PlexMovie movie,
-        CancellationToken cancellationToken)
-    {
-        await using SqliteCommand command = connection.CreateCommand();
-        command.Transaction = transaction;
-        command.CommandText =
-            """
+        await using SqliteCommand cmd = c.CreateCommand();
+        cmd.Transaction = t;
+        cmd.CommandText = """
             INSERT INTO Movies
-            (
-                Title,
-                ReleaseYear,
-                Rating,
-                Runtime,
-                Genre,
-                Director,
-                PlexGuid,
-                TMDbId,
-                IMDbId
-            )
+            (Title,ReleaseYear,Rating,Runtime,Genre,Director,PlexRatingKey,PlexGuid,TMDbId,IMDbId,SortTitle,Studio,Summary,PosterPath,BackgroundPath,LastSynced)
             VALUES
-            (
-                $title,
-                $year,
-                $rating,
-                $runtime,
-                $genre,
-                $director,
-                $plexGuid,
-                NULL,
-                ''
-            );
+            ($title,$year,$rating,$runtime,$genre,$director,$key,$guid,NULL,'','',$studio,$summary,$poster,$background,$synced);
             """;
-        AddParameters(command, movie);
-        await command.ExecuteNonQueryAsync(cancellationToken);
+        AddParameters(cmd, movie);
+        await cmd.ExecuteNonQueryAsync(ct);
     }
 
-    private static void AddParameters(
-        SqliteCommand command,
-        PlexMovie movie)
+    private static void AddParameters(SqliteCommand cmd, PlexMovie movie)
     {
-        command.Parameters.AddWithValue("$title", movie.Title);
-        command.Parameters.AddWithValue("$year", movie.ReleaseYear);
-        command.Parameters.AddWithValue("$rating", movie.Rating);
-        command.Parameters.AddWithValue("$runtime", movie.RuntimeMinutes);
-        command.Parameters.AddWithValue("$genre", movie.GenreDisplay);
-        command.Parameters.AddWithValue("$director", movie.DirectorDisplay);
-        command.Parameters.AddWithValue("$plexGuid", movie.PlexGuid);
+        cmd.Parameters.AddWithValue("$title", movie.Title);
+        cmd.Parameters.AddWithValue("$year", movie.ReleaseYear);
+        cmd.Parameters.AddWithValue("$rating", movie.Rating);
+        cmd.Parameters.AddWithValue("$runtime", movie.RuntimeMinutes);
+        cmd.Parameters.AddWithValue("$genre", movie.GenreDisplay);
+        cmd.Parameters.AddWithValue("$director", movie.DirectorDisplay);
+        cmd.Parameters.AddWithValue("$key", movie.PlexKey);
+        cmd.Parameters.AddWithValue("$guid", movie.PlexGuid);
+        cmd.Parameters.AddWithValue("$studio", movie.Studio);
+        cmd.Parameters.AddWithValue("$summary", movie.Summary);
+        cmd.Parameters.AddWithValue("$poster", movie.ThumbPath);
+        cmd.Parameters.AddWithValue("$background", movie.BackgroundPath);
+        cmd.Parameters.AddWithValue("$synced", DateTimeOffset.UtcNow.ToString("O"));
     }
 }

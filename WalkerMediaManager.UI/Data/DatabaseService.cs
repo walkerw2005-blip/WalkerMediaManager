@@ -7,7 +7,7 @@ namespace WalkerMediaManager.UI.Data;
 
 public static class DatabaseService
 {
-    private const int CurrentDatabaseVersion = 2;
+    private const int CurrentDatabaseVersion = 3;
 
     public static string DatabasePath =>
         Path.Combine(
@@ -47,6 +47,13 @@ public static class DatabaseService
             {
                 ApplyVersion2Migration(connection, transaction);
                 SetDatabaseVersion(connection, transaction, 2);
+                version = 2;
+            }
+
+            if (version < 3)
+            {
+                ApplyVersion3Migration(connection, transaction);
+                SetDatabaseVersion(connection, transaction, 3);
             }
 
             EnsureIndexes(connection, transaction);
@@ -200,6 +207,35 @@ public static class DatabaseService
         EnsureColumn(connection, transaction, "TVShows", "LastSynced", "TEXT NOT NULL DEFAULT ''");
     }
 
+    private static void ApplyVersion3Migration(
+        SqliteConnection connection,
+        SqliteTransaction transaction)
+    {
+        ExecuteNonQuery(
+            connection,
+            transaction,
+            """
+            CREATE TABLE IF NOT EXISTS OwnedCopies
+            (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                MovieId INTEGER NOT NULL,
+                Format TEXT NOT NULL DEFAULT '',
+                Edition TEXT NOT NULL DEFAULT '',
+                Packaging TEXT NOT NULL DEFAULT '',
+                Condition TEXT NOT NULL DEFAULT '',
+                Store TEXT NOT NULL DEFAULT '',
+                PurchasePrice REAL NULL,
+                PurchaseDate TEXT NOT NULL DEFAULT '',
+                Location TEXT NOT NULL DEFAULT '',
+                Notes TEXT NOT NULL DEFAULT '',
+                IsDigital INTEGER NOT NULL DEFAULT 0,
+                IsFavorite INTEGER NOT NULL DEFAULT 0,
+                CreatedAt TEXT NOT NULL DEFAULT (datetime('now')),
+                FOREIGN KEY (MovieId) REFERENCES Movies(Id) ON DELETE CASCADE
+            );
+            """);
+    }
+
     private static void EnsureIndexes(
         SqliteConnection connection,
         SqliteTransaction transaction)
@@ -225,6 +261,12 @@ public static class DatabaseService
 
             CREATE INDEX IF NOT EXISTS IX_Collections_Name
                 ON Collections (Name);
+
+            CREATE INDEX IF NOT EXISTS IX_OwnedCopies_MovieId
+                ON OwnedCopies (MovieId);
+
+            CREATE INDEX IF NOT EXISTS IX_OwnedCopies_Format
+                ON OwnedCopies (Format);
             """);
     }
 

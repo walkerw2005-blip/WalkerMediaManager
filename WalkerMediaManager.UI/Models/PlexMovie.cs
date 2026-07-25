@@ -13,6 +13,7 @@ public sealed class PlexMovie
     public string Summary { get; set; } = string.Empty;
     public string Studio { get; set; } = string.Empty;
     public string ThumbPath { get; set; } = string.Empty;
+    public string BackgroundPath { get; set; } = string.Empty;
     public List<string> Genres { get; set; } = [];
     public List<string> Directors { get; set; } = [];
 

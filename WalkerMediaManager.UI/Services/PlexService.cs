@@ -291,6 +291,8 @@ public sealed class PlexService
                 ?? string.Empty,
             ThumbPath = element.Attribute("thumb")?.Value
                 ?? string.Empty,
+            BackgroundPath = element.Attribute("art")?.Value
+                ?? string.Empty,
             Genres = element
                 .Elements("Genre")
                 .Select(item => item.Attribute("tag")?.Value ?? string.Empty)

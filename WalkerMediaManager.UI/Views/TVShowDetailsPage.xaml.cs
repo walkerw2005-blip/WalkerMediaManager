@@ -59,6 +59,8 @@ public sealed partial class TVShowDetailsPage : Page
         TMDbText.Text = $"TMDb ID: {(show.TMDbId?.ToString() ?? "Not available")}";
         PosterPathText.Text = $"Poster path: {ValueOrNotAvailable(show.PosterPath)}";
         BackgroundPathText.Text = $"Background path: {ValueOrNotAvailable(show.BackgroundPath)}";
+        PosterImage.ArtworkPath = show.PosterPath;
+        PosterImage.CacheKey = show.PlexRatingKey;
     }
 
     private static string ValueOrNotAvailable(string value) =>
