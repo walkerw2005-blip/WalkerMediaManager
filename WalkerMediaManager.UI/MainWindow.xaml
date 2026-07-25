@@ -32,6 +32,14 @@
             </NavigationViewItem>
 
             <NavigationViewItem
+                Content="Shopping Mode"
+                Tag="shopping">
+                <NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xE7BF;" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+
+            <NavigationViewItem
                 Content="Movies"
                 Tag="movies">
                 <NavigationViewItem.Icon>

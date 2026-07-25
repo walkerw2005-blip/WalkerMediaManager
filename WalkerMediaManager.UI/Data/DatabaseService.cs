@@ -7,7 +7,7 @@ namespace WalkerMediaManager.UI.Data;
 
 public static class DatabaseService
 {
-    private const int CurrentDatabaseVersion = 4;
+    private const int CurrentDatabaseVersion = 5;
 
     public static string DatabasePath =>
         Path.Combine(
@@ -61,6 +61,13 @@ public static class DatabaseService
             {
                 ApplyVersion4Migration(connection, transaction);
                 SetDatabaseVersion(connection, transaction, 4);
+                version = 4;
+            }
+
+            if (version < 5)
+            {
+                ApplyVersion5Migration(connection, transaction);
+                SetDatabaseVersion(connection, transaction, 5);
             }
 
             EnsureIndexes(connection, transaction);
@@ -273,6 +280,44 @@ public static class DatabaseService
             """);
     }
 
+    private static void ApplyVersion5Migration(
+        SqliteConnection connection,
+        SqliteTransaction transaction)
+    {
+        ExecuteNonQuery(
+            connection,
+            transaction,
+            """
+            CREATE TABLE IF NOT EXISTS Barcodes
+            (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                Code TEXT NOT NULL COLLATE NOCASE UNIQUE,
+                MovieId INTEGER NOT NULL,
+                Format TEXT NOT NULL DEFAULT '',
+                Edition TEXT NOT NULL DEFAULT '',
+                Notes TEXT NOT NULL DEFAULT '',
+                CreatedAt TEXT NOT NULL DEFAULT (datetime('now')),
+                FOREIGN KEY (MovieId) REFERENCES Movies(Id) ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS ShoppingHistory
+            (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                SearchText TEXT NOT NULL DEFAULT '',
+                Barcode TEXT NOT NULL DEFAULT '',
+                MovieId INTEGER NULL,
+                Title TEXT NOT NULL DEFAULT '',
+                Store TEXT NOT NULL DEFAULT '',
+                PlannedFormat TEXT NOT NULL DEFAULT '',
+                Price REAL NULL,
+                Decision TEXT NOT NULL DEFAULT '',
+                Notes TEXT NOT NULL DEFAULT '',
+                SearchedAt TEXT NOT NULL DEFAULT (datetime('now')),
+                FOREIGN KEY (MovieId) REFERENCES Movies(Id) ON DELETE SET NULL
+            );
+            """);
+    }
+
     private static void EnsureIndexes(
         SqliteConnection connection,
         SqliteTransaction transaction)
@@ -310,6 +355,15 @@ public static class DatabaseService
 
             CREATE INDEX IF NOT EXISTS IX_StorageLocations_IsActive
                 ON StorageLocations (IsActive);
+
+            CREATE INDEX IF NOT EXISTS IX_Barcodes_Code
+                ON Barcodes (Code);
+
+            CREATE INDEX IF NOT EXISTS IX_Barcodes_MovieId
+                ON Barcodes (MovieId);
+
+            CREATE INDEX IF NOT EXISTS IX_ShoppingHistory_SearchedAt
+                ON ShoppingHistory (SearchedAt);
             """);
     }
 
