@@ -7,7 +7,7 @@ namespace WalkerMediaManager.UI.Data;
 
 public static class DatabaseService
 {
-    private const int CurrentDatabaseVersion = 5;
+    private const int CurrentDatabaseVersion = 6;
 
     public static string DatabasePath =>
         Path.Combine(
@@ -68,6 +68,13 @@ public static class DatabaseService
             {
                 ApplyVersion5Migration(connection, transaction);
                 SetDatabaseVersion(connection, transaction, 5);
+                version = 5;
+            }
+
+            if (version < 6)
+            {
+                ApplyVersion6Migration(connection, transaction);
+                SetDatabaseVersion(connection, transaction, 6);
             }
 
             EnsureIndexes(connection, transaction);
@@ -318,6 +325,30 @@ public static class DatabaseService
             """);
     }
 
+
+    private static void ApplyVersion6Migration(
+        SqliteConnection connection,
+        SqliteTransaction transaction)
+    {
+        ExecuteNonQuery(
+            connection,
+            transaction,
+            """
+            CREATE TABLE IF NOT EXISTS Loans
+            (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                OwnedCopyId INTEGER NOT NULL,
+                Borrower TEXT NOT NULL DEFAULT '',
+                LoanedDate TEXT NOT NULL DEFAULT '',
+                DueDate TEXT NOT NULL DEFAULT '',
+                ReturnedDate TEXT NOT NULL DEFAULT '',
+                Notes TEXT NOT NULL DEFAULT '',
+                CreatedAt TEXT NOT NULL DEFAULT (datetime('now')),
+                FOREIGN KEY (OwnedCopyId) REFERENCES OwnedCopies(Id) ON DELETE CASCADE
+            );
+            """);
+    }
+
     private static void EnsureIndexes(
         SqliteConnection connection,
         SqliteTransaction transaction)
@@ -364,6 +395,12 @@ public static class DatabaseService
 
             CREATE INDEX IF NOT EXISTS IX_ShoppingHistory_SearchedAt
                 ON ShoppingHistory (SearchedAt);
+
+            CREATE INDEX IF NOT EXISTS IX_Loans_OwnedCopyId
+                ON Loans (OwnedCopyId);
+
+            CREATE INDEX IF NOT EXISTS IX_Loans_ReturnedDate
+                ON Loans (ReturnedDate);
             """);
     }
 

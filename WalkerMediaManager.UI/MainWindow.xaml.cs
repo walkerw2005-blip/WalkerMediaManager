@@ -45,6 +45,7 @@ public sealed partial class MainWindow : Window
             "locations" => typeof(StorageLocationsPage),
             "purchases" => typeof(PurchaseHistoryPage),
             "reports" => typeof(ReportsPage),
+            "intelligence" => typeof(CollectionIntelligencePage),
             _ => null
         };
 

@@ -88,6 +88,14 @@
             </NavigationViewItem>
 
             <NavigationViewItem
+                Content="Collection Intelligence"
+                Tag="intelligence">
+                <NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xE9D9;" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+
+            <NavigationViewItem
                 Content="Reports"
                 Tag="reports">
                 <NavigationViewItem.Icon>
