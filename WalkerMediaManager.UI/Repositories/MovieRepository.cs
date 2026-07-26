@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using Microsoft.Data.Sqlite;
 using WalkerMediaManager.UI.Data;
 using WalkerMediaManager.UI.Models;
+using WalkerMediaManager.UI.Services;
 
 namespace WalkerMediaManager.UI.Repositories;
 
@@ -12,6 +14,8 @@ public sealed class MovieRepository
     public async Task<List<Movie>> GetAllAsync()
     {
         List<Movie> movies = [];
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        DiagnosticsService.Log($"MovieRepository.GetAllAsync starting. Database: {DatabaseService.DatabasePath}");
         await using SqliteConnection connection = new($"Data Source={DatabaseService.DatabasePath}");
         await connection.OpenAsync();
         await using SqliteCommand command = connection.CreateCommand();
@@ -24,11 +28,13 @@ public sealed class MovieRepository
             ORDER BY CASE WHEN TRIM(SortTitle) <> '' THEN SortTitle ELSE Title END COLLATE NOCASE;
             """;
 
-        await using SqliteDataReader reader = await command.ExecuteReaderAsync();
-        while (await reader.ReadAsync())
+        try
         {
-            movies.Add(new Movie
+            await using SqliteDataReader reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
             {
+                movies.Add(new Movie
+                {
                 Id = reader.GetInt32(0),
                 Title = GetString(reader, 1),
                 ReleaseYear = GetInt32(reader, 2),
@@ -38,7 +44,7 @@ public sealed class MovieRepository
                 Director = GetString(reader, 6),
                 PlexRatingKey = GetString(reader, 7),
                 PlexGuid = GetString(reader, 8),
-                TMDbId = reader.IsDBNull(9) ? null : reader.GetInt32(9),
+                TMDbId = GetNullableInt32(reader, 9),
                 IMDbId = GetString(reader, 10),
                 SortTitle = GetString(reader, 11),
                 Studio = GetString(reader, 12),
@@ -46,10 +52,20 @@ public sealed class MovieRepository
                 PosterPath = GetString(reader, 14),
                 BackgroundPath = GetString(reader, 15),
                 LastSynced = GetString(reader, 16),
-                Owned = true
-            });
+                    Owned = true
+                });
+            }
+
+            stopwatch.Stop();
+            DiagnosticsService.Log($"MovieRepository.GetAllAsync returned {movies.Count} movies in {stopwatch.ElapsedMilliseconds} ms.");
+            return movies;
         }
-        return movies;
+        catch (Exception exception)
+        {
+            stopwatch.Stop();
+            DiagnosticsService.LogException($"MovieRepository.GetAllAsync failed after {stopwatch.ElapsedMilliseconds} ms.", exception);
+            throw;
+        }
     }
 
     public async Task<Movie?> GetByIdAsync(int movieId)
@@ -81,7 +97,7 @@ public sealed class MovieRepository
             Director = GetString(reader, 6),
             PlexRatingKey = GetString(reader, 7),
             PlexGuid = GetString(reader, 8),
-            TMDbId = reader.IsDBNull(9) ? null : reader.GetInt32(9),
+            TMDbId = GetNullableInt32(reader, 9),
             IMDbId = GetString(reader, 10),
             SortTitle = GetString(reader, 11),
             Studio = GetString(reader, 12),
@@ -173,9 +189,23 @@ public sealed class MovieRepository
         command.Parameters.AddWithValue("$lastSynced", movie.LastSynced);
     }
 
-    private static string GetString(SqliteDataReader reader, int ordinal) =>
-        reader.IsDBNull(ordinal) ? string.Empty : reader.GetString(ordinal);
+    private static string GetString(SqliteDataReader reader, int ordinal)
+    {
+        if (reader.IsDBNull(ordinal)) return string.Empty;
+        return Convert.ToString(reader.GetValue(ordinal)) ?? string.Empty;
+    }
 
-    private static int GetInt32(SqliteDataReader reader, int ordinal) =>
-        reader.IsDBNull(ordinal) ? 0 : reader.GetInt32(ordinal);
+    private static int GetInt32(SqliteDataReader reader, int ordinal)
+    {
+        if (reader.IsDBNull(ordinal)) return 0;
+        object value = reader.GetValue(ordinal);
+        return int.TryParse(Convert.ToString(value), out int result) ? result : 0;
+    }
+
+    private static int? GetNullableInt32(SqliteDataReader reader, int ordinal)
+    {
+        if (reader.IsDBNull(ordinal)) return null;
+        object value = reader.GetValue(ordinal);
+        return int.TryParse(Convert.ToString(value), out int result) ? result : null;
+    }
 }

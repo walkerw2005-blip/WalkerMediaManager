@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Data.Sqlite;
+using WalkerMediaManager.UI.Services;
 
 namespace WalkerMediaManager.UI.Data;
 
@@ -18,6 +19,7 @@ public static class DatabaseService
 
     public static void Initialize()
     {
+        DiagnosticsService.Log($"DatabaseService.Initialize using database: {DatabasePath}");
         string? databaseFolder = Path.GetDirectoryName(DatabasePath);
 
         if (string.IsNullOrWhiteSpace(databaseFolder))
@@ -88,10 +90,12 @@ public static class DatabaseService
             }
 
             transaction.Commit();
+            DiagnosticsService.Log($"Database migration complete. Schema version: {CurrentDatabaseVersion}.");
         }
-        catch
+        catch (Exception exception)
         {
             transaction.Rollback();
+            DiagnosticsService.LogException("Database migration failed.", exception);
             throw;
         }
     }

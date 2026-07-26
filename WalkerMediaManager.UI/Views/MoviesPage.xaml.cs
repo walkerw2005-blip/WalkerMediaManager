@@ -34,7 +34,19 @@ public sealed partial class MoviesPage : Page
     private async void MoviesPage_Loaded(object sender, RoutedEventArgs e)
     {
         RestorePreferences();
-        await RefreshMoviesAsync();
+        try
+        {
+            await RefreshMoviesAsync();
+        }
+        catch (Exception exception)
+        {
+            DiagnosticsService.LogException("MoviesPage failed to load the movie list.", exception);
+            MovieCountText.Text = "Movie load failed";
+            VisibleCountText.Text = "0 shown";
+            ShowStatus(
+                $"The movie list could not be loaded: {exception.Message}. A diagnostic log was written to {DiagnosticsService.LogFilePath}",
+                InfoBarSeverity.Error);
+        }
     }
 
     private async Task RefreshMoviesAsync()
