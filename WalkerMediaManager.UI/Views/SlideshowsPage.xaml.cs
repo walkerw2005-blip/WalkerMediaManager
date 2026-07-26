@@ -12,10 +12,10 @@ using WalkerMediaManager.UI.Services;
 
 namespace WalkerMediaManager.UI.Views;
 
-public sealed partial class MoviesPage : Page
+public sealed partial class SlideshowsPage : Page
 {
-    private const string ViewModeKey = "MoviesViewMode";
-    private const string SortModeKey = "MoviesSortMode";
+    private const string ViewModeKey = "SlideshowsViewMode";
+    private const string SortModeKey = "SlideshowsSortMode";
 
     private readonly MovieRepository _movieRepository = new();
     private readonly MovieSpreadsheetImportService _spreadsheetImportService = new();
@@ -24,13 +24,13 @@ public sealed partial class MoviesPage : Page
 
     public ObservableCollection<Movie> DisplayMovies { get; } = [];
 
-    public MoviesPage()
+    public SlideshowsPage()
     {
         InitializeComponent();
-        Loaded += MoviesPage_Loaded;
+        Loaded += SlideshowsPage_Loaded;
     }
 
-    private async void MoviesPage_Loaded(object sender, RoutedEventArgs e)
+    private async void SlideshowsPage_Loaded(object sender, RoutedEventArgs e)
     {
         RestorePreferences();
 
@@ -40,11 +40,11 @@ public sealed partial class MoviesPage : Page
         }
         catch (Exception exception)
         {
-            DiagnosticsService.LogException("MoviesPage failed to load the movie list.", exception);
-            MovieCountText.Text = "Movie load failed";
+            DiagnosticsService.LogException("SlideshowsPage failed to load the slide show list.", exception);
+            MovieCountText.Text = "Slide show load failed";
             VisibleCountText.Text = "0 shown";
             ShowStatus(
-                $"The movie list could not be loaded: {exception.Message}. A diagnostic log was written to {DiagnosticsService.LogFilePath}",
+                $"The slide show list could not be loaded: {exception.Message}. A diagnostic log was written to {DiagnosticsService.LogFilePath}",
                 InfoBarSeverity.Error);
         }
     }
@@ -52,9 +52,9 @@ public sealed partial class MoviesPage : Page
     private async Task RefreshMoviesAsync()
     {
         _allMovies.Clear();
-        _allMovies.AddRange(await _movieRepository.GetAllAsync());
+        _allMovies.AddRange(await _movieRepository.GetSlideshowsAsync());
         ApplyFilterAndSort();
-        MovieCountText.Text = _allMovies.Count == 1 ? "1 movie" : $"{_allMovies.Count} movies";
+        MovieCountText.Text = _allMovies.Count == 1 ? "1 slide show" : $"{_allMovies.Count} slide shows";
     }
 
     private void ApplyFilterAndSort()
@@ -165,7 +165,7 @@ public sealed partial class MoviesPage : Page
         catch (Exception exception)
         {
             DiagnosticsService.LogException(
-                $"MoviesPage could not save the preference '{key}'.",
+                $"SlideshowsPage could not save the preference '{key}'.",
                 exception);
         }
     }
@@ -236,7 +236,7 @@ public sealed partial class MoviesPage : Page
 
             int.TryParse(YearBox.Text.Trim(), out int year);
 
-            Movie movie = _movieBeingEdited ?? new Movie { Owned = true };
+            Movie movie = _movieBeingEdited ?? new Movie { Owned = true, PlexLibraryTitle = "Slide Shows" };
             movie.Title = title;
             movie.ReleaseYear = year;
             movie.Rating = RatingBox.Text.Trim();
@@ -260,7 +260,7 @@ public sealed partial class MoviesPage : Page
         catch (Exception exception)
         {
             args.Cancel = true;
-            DiagnosticsService.LogException("MoviesPage failed to save a movie.", exception);
+            DiagnosticsService.LogException("SlideshowsPage failed to save a slide show.", exception);
             ShowStatus($"The movie could not be saved: {exception.Message}", InfoBarSeverity.Error);
         }
         finally
@@ -291,7 +291,7 @@ public sealed partial class MoviesPage : Page
         }
         catch (Exception exception)
         {
-            DiagnosticsService.LogException("MoviesPage failed to delete a movie.", exception);
+            DiagnosticsService.LogException("SlideshowsPage failed to delete a slide show.", exception);
             ShowStatus($"The movie could not be deleted: {exception.Message}", InfoBarSeverity.Error);
         }
     }
@@ -317,7 +317,7 @@ public sealed partial class MoviesPage : Page
         }
         catch (Exception exception)
         {
-            DiagnosticsService.LogException("MoviesPage failed to import a spreadsheet.", exception);
+            DiagnosticsService.LogException("SlideshowsPage failed to import a spreadsheet.", exception);
             ShowImportStatus($"The spreadsheet could not be imported: {exception.Message}", InfoBarSeverity.Error);
         }
         finally

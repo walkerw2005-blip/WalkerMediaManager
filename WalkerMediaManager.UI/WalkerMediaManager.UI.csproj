@@ -22,13 +22,14 @@
     <Version>1.0.0</Version>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
-    <InformationalVersion>1.0.0-rc1a</InformationalVersion>
+    <InformationalVersion>1.0.0-rc1b-slideshows</InformationalVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Views\CollectionIntelligencePage.xaml" />
     <None Remove="Views\CollectionsPage.xaml" />
     <None Remove="Views\DashboardPage.xaml" />
     <None Remove="Views\MoviesPage.xaml" />
+    <None Remove="Views\SlideshowsPage.xaml" />
     <None Remove="Views\ReportsPage.xaml" />
     <None Remove="Views\SettingsPage.xaml" />
     <None Remove="Views\SmartBuyPage.xaml" />
@@ -79,6 +80,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Views\MoviesPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\SlideshowsPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Views\ReportsPage.xaml">

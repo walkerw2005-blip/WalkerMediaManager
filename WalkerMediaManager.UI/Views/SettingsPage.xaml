@@ -134,6 +134,59 @@
 
                 <StackPanel Spacing="16">
                     <TextBlock
+                        Text="Plex Slide Show Sync"
+                        FontSize="24"
+                        FontWeight="SemiBold" />
+
+                    <TextBlock
+                        Text="Choose the Plex library named Slide Shows. Synced items will appear on the separate Slide Shows page and will no longer appear under Movies."
+                        TextWrapping="Wrap"
+                        Opacity="0.7" />
+
+                    <ComboBox
+                        x:Name="SlideshowLibraryComboBox"
+                        Header="Slide Shows Library"
+                        ItemsSource="{x:Bind MovieLibraries, Mode=OneWay}"
+                        DisplayMemberPath="DisplayName"
+                        PlaceholderText="Test the connection to discover libraries" />
+
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <Button
+                            x:Name="SyncSlideshowsButton"
+                            Content="Sync Slide Shows from Plex"
+                            Padding="22,10"
+                            IsEnabled="False"
+                            Click="SyncSlideshowsButton_Click" />
+
+                        <ProgressRing
+                            x:Name="SlideshowSyncProgressRing"
+                            Width="28"
+                            Height="28"
+                            IsActive="False"
+                            Visibility="Collapsed" />
+                    </StackPanel>
+
+                    <TextBlock
+                        x:Name="SlideshowSyncProgressText"
+                        TextWrapping="Wrap"
+                        Opacity="0.7" />
+
+                    <InfoBar
+                        x:Name="SlideshowSyncInfoBar"
+                        IsOpen="False"
+                        IsClosable="True" />
+                </StackPanel>
+            </Border>
+
+            <Border
+                Padding="24"
+                CornerRadius="12"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1">
+
+                <StackPanel Spacing="16">
+                    <TextBlock
                         Text="Plex TV Show Sync"
                         FontSize="24"
                         FontWeight="SemiBold" />

@@ -4,13 +4,40 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid Background="{ThemeResource ControlFillColorSecondaryBrush}">
         <Grid x:Name="FallbackPanel">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8">
-                <FontIcon Glyph="&#xE7B8;" FontSize="58" Opacity="0.35" />
-                <TextBlock Text="Artwork unavailable" Opacity="0.55" />
+            <StackPanel HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Spacing="8"
+                        Padding="16">
+                <FontIcon x:Name="FallbackIcon"
+                          Glyph="&#xE714;"
+                          FontSize="58"
+                          Opacity="0.42" />
+                <TextBlock x:Name="FallbackTextBlock"
+                           Text="No Poster Available"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           HorizontalAlignment="Center"
+                           TextAlignment="Center"
+                           TextWrapping="Wrap" />
+                <TextBlock x:Name="FallbackDescriptionBlock"
+                           Visibility="Collapsed"
+                           Opacity="0.58"
+                           HorizontalAlignment="Center"
+                           TextAlignment="Center"
+                           TextWrapping="Wrap" />
             </StackPanel>
         </Grid>
-        <Image x:Name="ArtworkImage" Stretch="UniformToFill" Visibility="Collapsed" />
-        <ProgressRing x:Name="LoadingRing" Width="34" Height="34" IsActive="False" Visibility="Collapsed"
-                      HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+        <Image x:Name="ArtworkImage"
+               Stretch="UniformToFill"
+               Visibility="Collapsed" />
+
+        <ProgressRing x:Name="LoadingRing"
+                      Width="34"
+                      Height="34"
+                      IsActive="False"
+                      Visibility="Collapsed"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center" />
     </Grid>
 </UserControl>

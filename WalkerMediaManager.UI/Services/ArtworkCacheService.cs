@@ -43,9 +43,7 @@ public sealed class ArtworkCacheService
             return await StorageFile.GetFileFromPathAsync(artworkPath);
         }
 
-        string serverUrl =
-            ApplicationData.Current.LocalSettings.Values[ServerUrlSettingKey]?.ToString()
-            ?? string.Empty;
+        string serverUrl = SettingsService.GetString(ServerUrlSettingKey);
         string token = LoadToken();
 
         if (string.IsNullOrWhiteSpace(serverUrl))
@@ -60,24 +58,18 @@ public sealed class ArtworkCacheService
             return null;
         }
 
-        StorageFolder folder = await ApplicationData.Current.LocalCacheFolder.CreateFolderAsync(
-            CacheFolderName,
-            CreationCollisionOption.OpenIfExists);
+        string folderPath = Path.Combine(SettingsService.AppDataFolder, CacheFolderName);
+        Directory.CreateDirectory(folderPath);
 
         string key = string.IsNullOrWhiteSpace(cacheKey)
             ? artworkPath
             : cacheKey + "|" + artworkPath;
-        string fileName = CreateFileName(key);
+        string filePath = Path.Combine(folderPath, CreateFileName(key));
 
-        try
+        if (File.Exists(filePath) && new FileInfo(filePath).Length > 0)
         {
-            StorageFile cachedFile = await folder.GetFileAsync(fileName);
-            Debug.WriteLine($"Artwork cache hit: {cachedFile.Path}");
-            return cachedFile;
-        }
-        catch (FileNotFoundException)
-        {
-            // Expected on the first request for an image.
+            Debug.WriteLine($"Artwork cache hit: {filePath}");
+            return await StorageFile.GetFileFromPathAsync(filePath);
         }
 
         Uri uri = BuildArtworkUri(serverUrl, artworkPath, token);
@@ -111,28 +103,34 @@ public sealed class ArtworkCacheService
                 $"Plex returned '{mediaType}' instead of image data for artwork path '{artworkPath}'.");
         }
 
-        StorageFile file = await folder.CreateFileAsync(
-            fileName,
-            CreationCollisionOption.ReplaceExisting);
-
+        string temporaryPath = filePath + ".tmp";
         try
         {
-            await using Stream target = await file.OpenStreamForWriteAsync();
-            target.SetLength(0);
-            await response.Content.CopyToAsync(target, cancellationToken);
-            await target.FlushAsync(cancellationToken);
+            await using (FileStream target = new(
+                             temporaryPath,
+                             FileMode.Create,
+                             FileAccess.Write,
+                             FileShare.None,
+                             81920,
+                             useAsync: true))
+            {
+                await response.Content.CopyToAsync(target, cancellationToken);
+                await target.FlushAsync(cancellationToken);
+            }
 
-            if (target.Length == 0)
+            if (new FileInfo(temporaryPath).Length == 0)
             {
                 throw new InvalidDataException(
                     $"Plex returned an empty artwork file for '{artworkPath}'.");
             }
+
+            File.Move(temporaryPath, filePath, true);
         }
         catch
         {
             try
             {
-                await file.DeleteAsync(StorageDeleteOption.PermanentDelete);
+                if (File.Exists(temporaryPath)) File.Delete(temporaryPath);
             }
             catch
             {
@@ -142,22 +140,30 @@ public sealed class ArtworkCacheService
             throw;
         }
 
-        Debug.WriteLine($"Artwork cached: {file.Path}");
-        return file;
+        Debug.WriteLine($"Artwork cached: {filePath}");
+        return await StorageFile.GetFileFromPathAsync(filePath);
     }
 
-    public async Task ClearCacheAsync()
+    public Task ClearCacheAsync()
     {
-        StorageFolder folder = await ApplicationData.Current.LocalCacheFolder.CreateFolderAsync(
-            CacheFolderName,
-            CreationCollisionOption.OpenIfExists);
-
-        foreach (StorageFile file in await folder.GetFilesAsync())
+        string folderPath = Path.Combine(SettingsService.AppDataFolder, CacheFolderName);
+        if (Directory.Exists(folderPath))
         {
-            await file.DeleteAsync(StorageDeleteOption.PermanentDelete);
+            foreach (string filePath in Directory.EnumerateFiles(folderPath))
+            {
+                try
+                {
+                    File.Delete(filePath);
+                }
+                catch (Exception exception)
+                {
+                    DiagnosticsService.LogException($"Could not delete cached artwork '{filePath}'.", exception);
+                }
+            }
         }
 
         Debug.WriteLine("Artwork cache cleared.");
+        return Task.CompletedTask;
     }
 
     private static Uri BuildArtworkUri(string serverUrl, string artworkPath, string token)

@@ -12,6 +12,9 @@ namespace WalkerMediaManager.UI.Controls;
 
 public sealed partial class CachedArtworkImage : UserControl
 {
+    private const string DefaultFallbackGlyph = "\uE714";
+    private const string DefaultFallbackText = "No Poster Available";
+
     private CancellationTokenSource? _loadCts;
 
     public static readonly DependencyProperty ArtworkPathProperty = DependencyProperty.Register(
@@ -26,6 +29,24 @@ public sealed partial class CachedArtworkImage : UserControl
         typeof(CachedArtworkImage),
         new PropertyMetadata(string.Empty, OnArtworkChanged));
 
+    public static readonly DependencyProperty FallbackGlyphProperty = DependencyProperty.Register(
+        nameof(FallbackGlyph),
+        typeof(string),
+        typeof(CachedArtworkImage),
+        new PropertyMetadata(DefaultFallbackGlyph, OnFallbackChanged));
+
+    public static readonly DependencyProperty FallbackTextProperty = DependencyProperty.Register(
+        nameof(FallbackText),
+        typeof(string),
+        typeof(CachedArtworkImage),
+        new PropertyMetadata(DefaultFallbackText, OnFallbackChanged));
+
+    public static readonly DependencyProperty FallbackDescriptionProperty = DependencyProperty.Register(
+        nameof(FallbackDescription),
+        typeof(string),
+        typeof(CachedArtworkImage),
+        new PropertyMetadata(string.Empty, OnFallbackChanged));
+
     public string ArtworkPath
     {
         get => (string)GetValue(ArtworkPathProperty);
@@ -38,9 +59,28 @@ public sealed partial class CachedArtworkImage : UserControl
         set => SetValue(CacheKeyProperty, value);
     }
 
+    public string FallbackGlyph
+    {
+        get => (string)GetValue(FallbackGlyphProperty);
+        set => SetValue(FallbackGlyphProperty, value);
+    }
+
+    public string FallbackText
+    {
+        get => (string)GetValue(FallbackTextProperty);
+        set => SetValue(FallbackTextProperty, value);
+    }
+
+    public string FallbackDescription
+    {
+        get => (string)GetValue(FallbackDescriptionProperty);
+        set => SetValue(FallbackDescriptionProperty, value);
+    }
+
     public CachedArtworkImage()
     {
         InitializeComponent();
+        UpdateFallbackContent();
         Unloaded += (_, _) => _loadCts?.Cancel();
     }
 
@@ -49,6 +89,37 @@ public sealed partial class CachedArtworkImage : UserControl
         DependencyPropertyChangedEventArgs eventArgs)
     {
         _ = ((CachedArtworkImage)dependencyObject).LoadArtworkAsync();
+    }
+
+    private static void OnFallbackChanged(
+        DependencyObject dependencyObject,
+        DependencyPropertyChangedEventArgs eventArgs)
+    {
+        ((CachedArtworkImage)dependencyObject).UpdateFallbackContent();
+    }
+
+    private void UpdateFallbackContent()
+    {
+        if (FallbackIcon is null ||
+            FallbackTextBlock is null ||
+            FallbackDescriptionBlock is null)
+        {
+            return;
+        }
+
+        FallbackIcon.Glyph = string.IsNullOrWhiteSpace(FallbackGlyph)
+            ? DefaultFallbackGlyph
+            : FallbackGlyph;
+
+        FallbackTextBlock.Text = string.IsNullOrWhiteSpace(FallbackText)
+            ? DefaultFallbackText
+            : FallbackText;
+
+        string description = FallbackDescription?.Trim() ?? string.Empty;
+        FallbackDescriptionBlock.Text = description;
+        FallbackDescriptionBlock.Visibility = string.IsNullOrWhiteSpace(description)
+            ? Visibility.Collapsed
+            : Visibility.Visible;
     }
 
     private async System.Threading.Tasks.Task LoadArtworkAsync()
@@ -95,10 +166,10 @@ public sealed partial class CachedArtworkImage : UserControl
         {
             // Expected when a recycled card begins loading different artwork.
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
             Debug.WriteLine(
-                $"Artwork load failed. CacheKey='{CacheKey}', ArtworkPath='{ArtworkPath}'. {ex}");
+                $"Artwork load failed. CacheKey='{CacheKey}', ArtworkPath='{ArtworkPath}'. {exception}");
         }
         finally
         {

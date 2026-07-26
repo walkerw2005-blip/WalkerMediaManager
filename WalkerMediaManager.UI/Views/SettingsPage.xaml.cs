@@ -7,7 +7,6 @@ using Microsoft.UI.Xaml.Controls;
 using WalkerMediaManager.UI.Models;
 using WalkerMediaManager.UI.Services;
 using Windows.Security.Credentials;
-using Windows.Storage;
 
 namespace WalkerMediaManager.UI.Views;
 
@@ -16,6 +15,7 @@ public sealed partial class SettingsPage : Page
     private const string ServerUrlSettingKey = "PlexServerUrl";
     private const string MovieLibraryKeySettingKey = "PlexMovieLibraryKey";
     private const string TVLibraryKeySettingKey = "PlexTVLibraryKey";
+    private const string SlideshowLibraryKeySettingKey = "PlexSlideshowLibraryKey";
     private const string CredentialResource = "WalkerMediaManager.Plex";
     private const string CredentialUserName = "PlexToken";
 
@@ -37,13 +37,7 @@ public sealed partial class SettingsPage : Page
         object sender,
         RoutedEventArgs e)
     {
-        ApplicationDataContainer settings =
-            ApplicationData.Current.LocalSettings;
-
-        ServerUrlBox.Text =
-            settings.Values[ServerUrlSettingKey]?.ToString()
-            ?? string.Empty;
-
+        ServerUrlBox.Text = SettingsService.GetString(ServerUrlSettingKey);
         TokenBox.Password = LoadToken();
     }
 
@@ -70,17 +64,28 @@ public sealed partial class SettingsPage : Page
             return;
         }
 
-        ApplicationData.Current.LocalSettings.Values[
-            ServerUrlSettingKey] = serverUrl;
+        try
+        {
+            SettingsService.SetString(ServerUrlSettingKey, serverUrl);
+            SaveToken(token);
+            SaveSelectedLibraries();
 
-        SaveToken(token);
-        SaveSelectedLibraries();
+            ShowConnectionMessage(
+                "Plex settings were saved securely on this computer.",
+                InfoBarSeverity.Success);
 
-        ShowConnectionMessage(
-            "Plex settings were saved securely on this computer.",
-            InfoBarSeverity.Success);
+            await TestConnectionAsync();
+        }
+        catch (Exception exception)
+        {
+            DiagnosticsService.LogException(
+                "SettingsPage failed to save Plex settings.",
+                exception);
 
-        await TestConnectionAsync();
+            ShowConnectionMessage(
+                $"Plex settings could not be saved: {exception.Message}",
+                InfoBarSeverity.Error);
+        }
     }
 
     private async Task TestConnectionAsync()
@@ -136,6 +141,7 @@ public sealed partial class SettingsPage : Page
 
             RestoreSelectedLibraries();
             SyncMoviesButton.IsEnabled = MovieLibraries.Count > 0;
+            SyncSlideshowsButton.IsEnabled = MovieLibraries.Count > 0;
             SyncTVShowsButton.IsEnabled = TVLibraries.Count > 0;
 
             ShowConnectionMessage(
@@ -148,6 +154,7 @@ public sealed partial class SettingsPage : Page
             MovieLibraries.Clear();
             TVLibraries.Clear();
             SyncMoviesButton.IsEnabled = false;
+            SyncSlideshowsButton.IsEnabled = false;
             SyncTVShowsButton.IsEnabled = false;
 
             ShowConnectionMessage(
@@ -189,6 +196,9 @@ public sealed partial class SettingsPage : Page
 
         try
         {
+            MovieSyncProgressText.Text = "Creating database backup...";
+            await DatabaseBackupService.CreateBackupAsync();
+
             Progress<string> progress = new(
                 message => MovieSyncProgressText.Text = message);
 
@@ -197,6 +207,7 @@ public sealed partial class SettingsPage : Page
                     serverUrl,
                     token,
                     library.Key,
+                    library.Title,
                     progress);
 
             MovieSyncProgressText.Text = "Movie sync complete.";
@@ -216,6 +227,69 @@ public sealed partial class SettingsPage : Page
         finally
         {
             SetMovieSyncBusy(false);
+        }
+    }
+
+    private async void SyncSlideshowsButton_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        if (SlideshowLibraryComboBox.SelectedItem is not PlexLibrarySection library)
+        {
+            ShowSlideshowSyncMessage(
+                "Select the Plex Slide Shows library to sync.",
+                InfoBarSeverity.Warning);
+            return;
+        }
+
+        string serverUrl = ServerUrlBox.Text.Trim();
+        string token = TokenBox.Password.Trim();
+
+        if (string.IsNullOrWhiteSpace(serverUrl) ||
+            string.IsNullOrWhiteSpace(token))
+        {
+            ShowSlideshowSyncMessage(
+                "Enter the Plex server address and token first.",
+                InfoBarSeverity.Warning);
+            return;
+        }
+
+        SaveSelectedLibraries();
+        SetSlideshowSyncBusy(true);
+
+        try
+        {
+            SlideshowSyncProgressText.Text = "Creating database backup...";
+            await DatabaseBackupService.CreateBackupAsync();
+
+            Progress<string> progress = new(
+                message => SlideshowSyncProgressText.Text = message);
+
+            PlexSyncResult result =
+                await _plexMovieSyncService.SyncMoviesAsync(
+                    serverUrl,
+                    token,
+                    library.Key,
+                    library.Title,
+                    progress);
+
+            SlideshowSyncProgressText.Text = "Slide show sync complete.";
+
+            ShowSlideshowSyncMessage(
+                result.Summary,
+                result.FailedCount > 0
+                    ? InfoBarSeverity.Warning
+                    : InfoBarSeverity.Success);
+        }
+        catch (Exception exception)
+        {
+            ShowSlideshowSyncMessage(
+                $"Plex slide show sync failed: {exception.Message}",
+                InfoBarSeverity.Error);
+        }
+        finally
+        {
+            SetSlideshowSyncBusy(false);
         }
     }
 
@@ -248,6 +322,9 @@ public sealed partial class SettingsPage : Page
 
         try
         {
+            TVSyncProgressText.Text = "Creating database backup...";
+            await DatabaseBackupService.CreateBackupAsync();
+
             Progress<string> progress = new(
                 message => TVSyncProgressText.Text = message);
 
@@ -280,20 +357,23 @@ public sealed partial class SettingsPage : Page
 
     private void RestoreSelectedLibraries()
     {
-        ApplicationDataContainer settings =
-            ApplicationData.Current.LocalSettings;
-
-        string movieKey =
-            settings.Values[MovieLibraryKeySettingKey]?.ToString()
-            ?? string.Empty;
+        string movieKey = SettingsService.GetString(MovieLibraryKeySettingKey);
 
         MovieLibraryComboBox.SelectedItem = MovieLibraries
             .FirstOrDefault(item => item.Key == movieKey)
             ?? MovieLibraries.FirstOrDefault();
 
-        string tvKey =
-            settings.Values[TVLibraryKeySettingKey]?.ToString()
-            ?? string.Empty;
+        string slideshowKey =
+            SettingsService.GetString(SlideshowLibraryKeySettingKey);
+
+        SlideshowLibraryComboBox.SelectedItem = MovieLibraries
+            .FirstOrDefault(item => item.Key == slideshowKey)
+            ?? MovieLibraries.FirstOrDefault(
+                item => item.Title.Contains(
+                    "slide",
+                    StringComparison.OrdinalIgnoreCase));
+
+        string tvKey = SettingsService.GetString(TVLibraryKeySettingKey);
 
         TVLibraryComboBox.SelectedItem = TVLibraries
             .FirstOrDefault(item => item.Key == tvKey)
@@ -304,14 +384,23 @@ public sealed partial class SettingsPage : Page
     {
         if (MovieLibraryComboBox.SelectedItem is PlexLibrarySection movieLibrary)
         {
-            ApplicationData.Current.LocalSettings.Values[
-                MovieLibraryKeySettingKey] = movieLibrary.Key;
+            SettingsService.SetString(
+                MovieLibraryKeySettingKey,
+                movieLibrary.Key);
+        }
+
+        if (SlideshowLibraryComboBox.SelectedItem is PlexLibrarySection slideshowLibrary)
+        {
+            SettingsService.SetString(
+                SlideshowLibraryKeySettingKey,
+                slideshowLibrary.Key);
         }
 
         if (TVLibraryComboBox.SelectedItem is PlexLibrarySection tvLibrary)
         {
-            ApplicationData.Current.LocalSettings.Values[
-                TVLibraryKeySettingKey] = tvLibrary.Key;
+            SettingsService.SetString(
+                TVLibraryKeySettingKey,
+                tvLibrary.Key);
         }
     }
 
@@ -320,11 +409,13 @@ public sealed partial class SettingsPage : Page
         try
         {
             PasswordVault vault = new();
+
             PasswordCredential credential = vault.Retrieve(
                 CredentialResource,
                 CredentialUserName);
+
             credential.RetrievePassword();
-            return credential.Password;
+            return credential.Password ?? string.Empty;
         }
         catch
         {
@@ -341,6 +432,7 @@ public sealed partial class SettingsPage : Page
             PasswordCredential existing = vault.Retrieve(
                 CredentialResource,
                 CredentialUserName);
+
             vault.Remove(existing);
         }
         catch
@@ -378,6 +470,23 @@ public sealed partial class SettingsPage : Page
         MovieSyncProgressRing.IsActive = isBusy;
         MovieSyncProgressRing.Visibility =
             isBusy ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void SetSlideshowSyncBusy(bool isBusy)
+    {
+        SyncSlideshowsButton.IsEnabled = !isBusy;
+        SlideshowSyncProgressRing.IsActive = isBusy;
+        SlideshowSyncProgressRing.Visibility =
+            isBusy ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void ShowSlideshowSyncMessage(
+        string message,
+        InfoBarSeverity severity)
+    {
+        SlideshowSyncInfoBar.Message = message;
+        SlideshowSyncInfoBar.Severity = severity;
+        SlideshowSyncInfoBar.IsOpen = true;
     }
 
     private void SetTVSyncBusy(bool isBusy)

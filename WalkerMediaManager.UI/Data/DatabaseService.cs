@@ -1,25 +1,25 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.Data.Sqlite;
-using WalkerMediaManager.UI.Services;
 
 namespace WalkerMediaManager.UI.Data;
 
 public static class DatabaseService
 {
-    private const int CurrentDatabaseVersion = 6;
+    private const int CurrentDatabaseVersion = 7;
 
     public static string DatabasePath =>
         Path.Combine(
-            Environment.GetFolderPath(
-                Environment.SpecialFolder.LocalApplicationData),
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            "AppData",
+            "Local",
             "WalkerMediaManager",
             "walker.db");
 
     public static void Initialize()
     {
-        DiagnosticsService.Log($"DatabaseService.Initialize using database: {DatabasePath}");
         string? databaseFolder = Path.GetDirectoryName(DatabasePath);
 
         if (string.IsNullOrWhiteSpace(databaseFolder))
@@ -29,6 +29,7 @@ public static class DatabaseService
         }
 
         Directory.CreateDirectory(databaseFolder);
+        MigrateNewestPackagedDatabaseIfNeeded();
 
         using SqliteConnection connection =
             new($"Data Source={DatabasePath}");
@@ -77,6 +78,13 @@ public static class DatabaseService
             {
                 ApplyVersion6Migration(connection, transaction);
                 SetDatabaseVersion(connection, transaction, 6);
+                version = 6;
+            }
+
+            if (version < 7)
+            {
+                ApplyVersion7Migration(connection, transaction);
+                SetDatabaseVersion(connection, transaction, 7);
             }
 
             EnsureIndexes(connection, transaction);
@@ -90,13 +98,58 @@ public static class DatabaseService
             }
 
             transaction.Commit();
-            DiagnosticsService.Log($"Database migration complete. Schema version: {CurrentDatabaseVersion}.");
         }
-        catch (Exception exception)
+        catch
         {
             transaction.Rollback();
-            DiagnosticsService.LogException("Database migration failed.", exception);
             throw;
+        }
+    }
+
+
+    private static void MigrateNewestPackagedDatabaseIfNeeded()
+    {
+        try
+        {
+            string packagesFolder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                "AppData",
+                "Local",
+                "Packages");
+
+            if (!Directory.Exists(packagesFolder)) return;
+
+            string? newestCandidate = Directory
+                .EnumerateFiles(packagesFolder, "walker.db", SearchOption.AllDirectories)
+                .Where(path => path.Contains(
+                    Path.Combine("LocalCache", "Local", "WalkerMediaManager"),
+                    StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(File.GetLastWriteTimeUtc)
+                .FirstOrDefault();
+
+            if (string.IsNullOrWhiteSpace(newestCandidate) ||
+                string.Equals(newestCandidate, DatabasePath, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            bool shouldMigrate = !File.Exists(DatabasePath) ||
+                                 File.GetLastWriteTimeUtc(newestCandidate) >
+                                 File.GetLastWriteTimeUtc(DatabasePath).AddSeconds(2);
+
+            if (!shouldMigrate) return;
+
+            if (File.Exists(DatabasePath))
+            {
+                string backupPath = DatabasePath + ".pre-portable-migration.bak";
+                File.Copy(DatabasePath, backupPath, true);
+            }
+
+            File.Copy(newestCandidate, DatabasePath, true);
+        }
+        catch
+        {
+            // Database initialization will continue with the canonical database.
         }
     }
 
@@ -351,6 +404,15 @@ public static class DatabaseService
                 FOREIGN KEY (OwnedCopyId) REFERENCES OwnedCopies(Id) ON DELETE CASCADE
             );
             """);
+    }
+
+
+    private static void ApplyVersion7Migration(
+        SqliteConnection connection,
+        SqliteTransaction transaction)
+    {
+        EnsureColumn(connection, transaction, "Movies", "PlexLibraryKey", "TEXT NOT NULL DEFAULT ''");
+        EnsureColumn(connection, transaction, "Movies", "PlexLibraryTitle", "TEXT NOT NULL DEFAULT ''");
     }
 
     private static void EnsureIndexes(

@@ -39,6 +39,7 @@ public sealed partial class MainWindow : Window
             "smartbuy" => typeof(SmartBuyPage),
             "shopping" => typeof(ShoppingModePage),
             "movies" => typeof(MoviesPage),
+            "slideshows" => typeof(SlideshowsPage),
             "tvshows" => typeof(TvShowsPage),
             "collections" => typeof(CollectionsPage),
             "wishlist" => typeof(WishlistPage),

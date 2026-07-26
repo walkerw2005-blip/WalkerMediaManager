@@ -19,6 +19,8 @@ public sealed class Movie
     public string PosterPath { get; set; } = string.Empty;
     public string BackgroundPath { get; set; } = string.Empty;
     public string LastSynced { get; set; } = string.Empty;
+    public string PlexLibraryKey { get; set; } = string.Empty;
+    public string PlexLibraryTitle { get; set; } = string.Empty;
     public string Format { get; set; } = string.Empty;
     public bool Owned { get; set; } = true;
 

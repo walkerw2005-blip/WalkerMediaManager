@@ -48,6 +48,14 @@
             </NavigationViewItem>
 
             <NavigationViewItem
+                Content="Slide Shows"
+                Tag="slideshows">
+                <NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xEB9F;" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+
+            <NavigationViewItem
                 Content="TV Shows"
                 Tag="tvshows">
                 <NavigationViewItem.Icon>
