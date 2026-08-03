@@ -1,0 +1,44 @@
+{
+  "id": "insidious",
+  "name": "Insidious",
+  "description": "The Insidious theatrical films",
+  "category": "Horror",
+  "studio": "Sony Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Insidious",
+      "year": 2010,
+      "aliases": []
+    },
+    {
+      "title": "Insidious: Chapter 2",
+      "year": 2013,
+      "aliases": [
+        "Insidious 2"
+      ]
+    },
+    {
+      "title": "Insidious: Chapter 3",
+      "year": 2015,
+      "aliases": [
+        "Insidious 3"
+      ]
+    },
+    {
+      "title": "Insidious: The Last Key",
+      "year": 2018,
+      "aliases": [
+        "Insidious 4"
+      ]
+    },
+    {
+      "title": "Insidious: The Red Door",
+      "year": 2023,
+      "aliases": [
+        "Insidious 5"
+      ]
+    }
+  ]
+}

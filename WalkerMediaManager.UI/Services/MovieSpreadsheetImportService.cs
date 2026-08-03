@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -382,9 +382,9 @@ public sealed class MovieSpreadsheetImportService
         string title,
         int releaseYear)
     {
-        return
-            $"{title.Trim().ToUpperInvariant()}|" +
-            $"{releaseYear}";
+        return MediaDuplicateService.CreateKey(
+            title,
+            releaseYear);
     }
 
     private static string CleanFilePath(

@@ -1,0 +1,32 @@
+{
+  "id": "narnia",
+  "name": "The Chronicles of Narnia",
+  "description": "The Chronicles of Narnia theatrical films",
+  "category": "Adventure",
+  "studio": "Walt Disney Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "The Chronicles of Narnia: The Lion, the Witch and the Wardrobe",
+      "year": 2005,
+      "aliases": [
+        "Narnia The Lion the Witch and the Wardrobe"
+      ]
+    },
+    {
+      "title": "The Chronicles of Narnia: Prince Caspian",
+      "year": 2008,
+      "aliases": [
+        "Prince Caspian"
+      ]
+    },
+    {
+      "title": "The Chronicles of Narnia: The Voyage of the Dawn Treader",
+      "year": 2010,
+      "aliases": [
+        "Voyage of the Dawn Treader"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "id": "venom",
+  "name": "Venom",
+  "description": "The Venom theatrical films",
+  "category": "Superhero",
+  "studio": "Sony Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Venom",
+      "year": 2018,
+      "aliases": []
+    },
+    {
+      "title": "Venom: Let There Be Carnage",
+      "year": 2021,
+      "aliases": [
+        "Venom 2"
+      ]
+    },
+    {
+      "title": "Venom: The Last Dance",
+      "year": 2024,
+      "aliases": [
+        "Venom 3"
+      ]
+    }
+  ]
+}

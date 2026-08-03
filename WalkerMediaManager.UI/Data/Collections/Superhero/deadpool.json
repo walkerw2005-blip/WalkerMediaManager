@@ -1,0 +1,29 @@
+{
+  "id": "deadpool",
+  "name": "Deadpool",
+  "description": "The Deadpool theatrical films",
+  "category": "Superhero",
+  "studio": "20th Century Studios",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Deadpool",
+      "year": 2016,
+      "aliases": []
+    },
+    {
+      "title": "Deadpool 2",
+      "year": 2018,
+      "aliases": []
+    },
+    {
+      "title": "Deadpool & Wolverine",
+      "year": 2024,
+      "aliases": [
+        "Deadpool and Wolverine",
+        "Deadpool 3"
+      ]
+    }
+  ]
+}

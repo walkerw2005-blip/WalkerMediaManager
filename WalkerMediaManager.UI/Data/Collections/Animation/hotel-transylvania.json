@@ -1,0 +1,35 @@
+{
+  "id": "hotel-transylvania",
+  "name": "Hotel Transylvania",
+  "description": "The Hotel Transylvania films",
+  "category": "Animation",
+  "studio": "Sony Pictures Animation",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Hotel Transylvania",
+      "year": 2012,
+      "aliases": []
+    },
+    {
+      "title": "Hotel Transylvania 2",
+      "year": 2015,
+      "aliases": []
+    },
+    {
+      "title": "Hotel Transylvania 3: Summer Vacation",
+      "year": 2018,
+      "aliases": [
+        "Hotel Transylvania 3"
+      ]
+    },
+    {
+      "title": "Hotel Transylvania: Transformania",
+      "year": 2022,
+      "aliases": [
+        "Hotel Transylvania 4"
+      ]
+    }
+  ]
+}

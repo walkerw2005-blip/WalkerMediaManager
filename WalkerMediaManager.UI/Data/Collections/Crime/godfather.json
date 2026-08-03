@@ -1,0 +1,30 @@
+{
+  "id": "godfather",
+  "name": "The Godfather",
+  "description": "The Godfather trilogy",
+  "category": "Crime",
+  "studio": "Paramount Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "The Godfather",
+      "year": 1972,
+      "aliases": []
+    },
+    {
+      "title": "The Godfather Part II",
+      "year": 1974,
+      "aliases": [
+        "The Godfather Part 2"
+      ]
+    },
+    {
+      "title": "The Godfather Part III",
+      "year": 1990,
+      "aliases": [
+        "The Godfather Part 3"
+      ]
+    }
+  ]
+}

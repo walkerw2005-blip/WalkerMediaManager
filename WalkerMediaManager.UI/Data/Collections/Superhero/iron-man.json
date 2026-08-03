@@ -1,0 +1,26 @@
+{
+  "id": "iron-man",
+  "name": "Iron Man",
+  "description": "The Iron Man theatrical films",
+  "category": "Superhero",
+  "studio": "Marvel Studios",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Iron Man",
+      "year": 2008,
+      "aliases": []
+    },
+    {
+      "title": "Iron Man 2",
+      "year": 2010,
+      "aliases": []
+    },
+    {
+      "title": "Iron Man 3",
+      "year": 2013,
+      "aliases": []
+    }
+  ]
+}

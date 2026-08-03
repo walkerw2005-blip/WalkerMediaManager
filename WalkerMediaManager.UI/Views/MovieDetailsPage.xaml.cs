@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using Windows.Globalization.NumberFormatting;
 using WalkerMediaManager.UI.Models;
 using WalkerMediaManager.UI.Repositories;
 
@@ -21,6 +22,12 @@ public sealed partial class MovieDetailsPage : Page
     public MovieDetailsPage()
     {
         InitializeComponent();
+        PriceNumberBox.NumberFormatter = new DecimalFormatter
+        {
+            IntegerDigits = 1,
+            FractionDigits = 2,
+            IsGrouped = false
+        };
     }
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -200,7 +207,7 @@ public sealed partial class MovieDetailsPage : Page
             copy.PurchaseDate = PurchaseDatePicker.Date?.ToString("O") ?? string.Empty;
             copy.Location = LocationTextBox.Text.Trim();
             copy.Notes = NotesTextBox.Text.Trim();
-            copy.IsDigital = DigitalCheckBox.IsChecked == true;
+            copy.IsDigital = IsPhysicalFormat(format) || DigitalCheckBox.IsChecked == true;
             copy.IsFavorite = FavoriteCheckBox.IsChecked == true;
 
             if (copy.Id == 0)
@@ -241,7 +248,7 @@ public sealed partial class MovieDetailsPage : Page
         PurchaseDatePicker.Date = null;
         LocationTextBox.Text = string.Empty;
         NotesTextBox.Text = string.Empty;
-        DigitalCheckBox.IsChecked = false;
+        DigitalCheckBox.IsChecked = true;
         FavoriteCheckBox.IsChecked = false;
         CopyDialogInfoBar.IsOpen = false;
     }
@@ -265,6 +272,9 @@ public sealed partial class MovieDetailsPage : Page
         DigitalCheckBox.IsChecked = copy.IsDigital;
         FavoriteCheckBox.IsChecked = copy.IsFavorite;
     }
+
+    private static bool IsPhysicalFormat(string format) =>
+        !string.Equals(format, "Digital", StringComparison.OrdinalIgnoreCase);
 
     private static string GetComboText(ComboBox comboBox)
     {

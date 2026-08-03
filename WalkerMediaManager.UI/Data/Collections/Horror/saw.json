@@ -1,0 +1,78 @@
+{
+  "id": "saw",
+  "name": "Saw",
+  "description": "The Saw theatrical films through Saw X",
+  "category": "Horror",
+  "studio": "Lionsgate",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Saw",
+      "year": 2004,
+      "aliases": []
+    },
+    {
+      "title": "Saw II",
+      "year": 2005,
+      "aliases": [
+        "Saw 2"
+      ]
+    },
+    {
+      "title": "Saw III",
+      "year": 2006,
+      "aliases": [
+        "Saw 3"
+      ]
+    },
+    {
+      "title": "Saw IV",
+      "year": 2007,
+      "aliases": [
+        "Saw 4"
+      ]
+    },
+    {
+      "title": "Saw V",
+      "year": 2008,
+      "aliases": [
+        "Saw 5"
+      ]
+    },
+    {
+      "title": "Saw VI",
+      "year": 2009,
+      "aliases": [
+        "Saw 6"
+      ]
+    },
+    {
+      "title": "Saw 3D",
+      "year": 2010,
+      "aliases": [
+        "Saw 7",
+        "Saw The Final Chapter"
+      ]
+    },
+    {
+      "title": "Jigsaw",
+      "year": 2017,
+      "aliases": []
+    },
+    {
+      "title": "Spiral: From the Book of Saw",
+      "year": 2021,
+      "aliases": [
+        "Spiral"
+      ]
+    },
+    {
+      "title": "Saw X",
+      "year": 2023,
+      "aliases": [
+        "Saw 10"
+      ]
+    }
+  ]
+}

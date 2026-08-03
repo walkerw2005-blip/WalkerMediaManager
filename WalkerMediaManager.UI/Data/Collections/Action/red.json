@@ -1,0 +1,21 @@
+{
+  "id": "red",
+  "name": "RED",
+  "description": "The RED theatrical films",
+  "category": "Action",
+  "studio": "Summit Entertainment",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "RED",
+      "year": 2010,
+      "aliases": []
+    },
+    {
+      "title": "RED 2",
+      "year": 2013,
+      "aliases": []
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "id": "terminator",
+  "name": "Terminator",
+  "description": "The Terminator theatrical films",
+  "category": "SciFi",
+  "studio": "Paramount Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "The Terminator",
+      "year": 1984,
+      "aliases": [
+        "Terminator"
+      ]
+    },
+    {
+      "title": "Terminator 2: Judgment Day",
+      "year": 1991,
+      "aliases": [
+        "Terminator 2",
+        "T2 Judgment Day"
+      ]
+    },
+    {
+      "title": "Terminator 3: Rise of the Machines",
+      "year": 2003,
+      "aliases": [
+        "Terminator 3"
+      ]
+    },
+    {
+      "title": "Terminator Salvation",
+      "year": 2009,
+      "aliases": []
+    },
+    {
+      "title": "Terminator Genisys",
+      "year": 2015,
+      "aliases": []
+    },
+    {
+      "title": "Terminator: Dark Fate",
+      "year": 2019,
+      "aliases": [
+        "Terminator Dark Fate"
+      ]
+    }
+  ]
+}

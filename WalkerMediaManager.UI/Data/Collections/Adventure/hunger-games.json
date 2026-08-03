@@ -1,0 +1,46 @@
+{
+  "id": "hunger-games",
+  "name": "The Hunger Games",
+  "description": "The Hunger Games theatrical films",
+  "category": "Adventure",
+  "studio": "Lionsgate",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "The Hunger Games",
+      "year": 2012,
+      "aliases": [
+        "Hunger Games"
+      ]
+    },
+    {
+      "title": "The Hunger Games: Catching Fire",
+      "year": 2013,
+      "aliases": [
+        "Catching Fire"
+      ]
+    },
+    {
+      "title": "The Hunger Games: Mockingjay - Part 1",
+      "year": 2014,
+      "aliases": [
+        "Mockingjay Part 1"
+      ]
+    },
+    {
+      "title": "The Hunger Games: Mockingjay - Part 2",
+      "year": 2015,
+      "aliases": [
+        "Mockingjay Part 2"
+      ]
+    },
+    {
+      "title": "The Hunger Games: The Ballad of Songbirds & Snakes",
+      "year": 2023,
+      "aliases": [
+        "The Ballad of Songbirds and Snakes"
+      ]
+    }
+  ]
+}

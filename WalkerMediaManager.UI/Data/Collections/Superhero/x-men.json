@@ -1,0 +1,53 @@
+{
+  "id": "x-men",
+  "name": "X-Men",
+  "description": "The main X-Men theatrical films",
+  "category": "Superhero",
+  "studio": "20th Century Studios",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "X-Men",
+      "year": 2000,
+      "aliases": []
+    },
+    {
+      "title": "X2: X-Men United",
+      "year": 2003,
+      "aliases": [
+        "X-Men 2",
+        "X2"
+      ]
+    },
+    {
+      "title": "X-Men: The Last Stand",
+      "year": 2006,
+      "aliases": [
+        "X-Men 3"
+      ]
+    },
+    {
+      "title": "X-Men: First Class",
+      "year": 2011,
+      "aliases": []
+    },
+    {
+      "title": "X-Men: Days of Future Past",
+      "year": 2014,
+      "aliases": []
+    },
+    {
+      "title": "X-Men: Apocalypse",
+      "year": 2016,
+      "aliases": []
+    },
+    {
+      "title": "Dark Phoenix",
+      "year": 2019,
+      "aliases": [
+        "X-Men Dark Phoenix"
+      ]
+    }
+  ]
+}

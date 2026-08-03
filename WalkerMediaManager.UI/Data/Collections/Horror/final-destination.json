@@ -1,0 +1,38 @@
+{
+  "id": "final-destination",
+  "name": "Final Destination",
+  "description": "The Final Destination theatrical films",
+  "category": "Horror",
+  "studio": "New Line Cinema",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Final Destination",
+      "year": 2000,
+      "aliases": []
+    },
+    {
+      "title": "Final Destination 2",
+      "year": 2003,
+      "aliases": []
+    },
+    {
+      "title": "Final Destination 3",
+      "year": 2006,
+      "aliases": []
+    },
+    {
+      "title": "The Final Destination",
+      "year": 2009,
+      "aliases": [
+        "Final Destination 4"
+      ]
+    },
+    {
+      "title": "Final Destination 5",
+      "year": 2011,
+      "aliases": []
+    }
+  ]
+}

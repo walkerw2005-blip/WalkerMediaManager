@@ -1,0 +1,25 @@
+{
+  "id": "incredibles",
+  "name": "The Incredibles",
+  "description": "The Incredibles theatrical films",
+  "category": "Animation",
+  "studio": "Pixar",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "The Incredibles",
+      "year": 2004,
+      "aliases": [
+        "Incredibles"
+      ]
+    },
+    {
+      "title": "Incredibles 2",
+      "year": 2018,
+      "aliases": [
+        "The Incredibles 2"
+      ]
+    }
+  ]
+}

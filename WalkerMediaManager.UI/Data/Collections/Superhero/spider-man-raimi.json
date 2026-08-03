@@ -1,0 +1,32 @@
+{
+  "id": "spider-man-raimi",
+  "name": "Spider-Man — Raimi Trilogy",
+  "description": "Sam Raimi’s Spider-Man trilogy",
+  "category": "Superhero",
+  "studio": "Sony Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Spider-Man",
+      "year": 2002,
+      "aliases": [
+        "Spiderman"
+      ]
+    },
+    {
+      "title": "Spider-Man 2",
+      "year": 2004,
+      "aliases": [
+        "Spiderman 2"
+      ]
+    },
+    {
+      "title": "Spider-Man 3",
+      "year": 2007,
+      "aliases": [
+        "Spiderman 3"
+      ]
+    }
+  ]
+}

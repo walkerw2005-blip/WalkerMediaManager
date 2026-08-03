@@ -1,0 +1,70 @@
+{
+  "id": "nightmare-elm-street",
+  "name": "A Nightmare on Elm Street",
+  "description": "The Nightmare on Elm Street theatrical films",
+  "category": "Horror",
+  "studio": "New Line Cinema",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "A Nightmare on Elm Street",
+      "year": 1984,
+      "aliases": []
+    },
+    {
+      "title": "A Nightmare on Elm Street 2: Freddy’s Revenge",
+      "year": 1985,
+      "aliases": [
+        "Nightmare on Elm Street 2"
+      ]
+    },
+    {
+      "title": "A Nightmare on Elm Street 3: Dream Warriors",
+      "year": 1987,
+      "aliases": [
+        "Nightmare on Elm Street 3"
+      ]
+    },
+    {
+      "title": "A Nightmare on Elm Street 4: The Dream Master",
+      "year": 1988,
+      "aliases": [
+        "Nightmare on Elm Street 4"
+      ]
+    },
+    {
+      "title": "A Nightmare on Elm Street 5: The Dream Child",
+      "year": 1989,
+      "aliases": [
+        "Nightmare on Elm Street 5"
+      ]
+    },
+    {
+      "title": "Freddy's Dead: The Final Nightmare",
+      "year": 1991,
+      "aliases": [
+        "Freddys Dead"
+      ]
+    },
+    {
+      "title": "Wes Craven's New Nightmare",
+      "year": 1994,
+      "aliases": [
+        "New Nightmare"
+      ]
+    },
+    {
+      "title": "Freddy vs. Jason",
+      "year": 2003,
+      "aliases": []
+    },
+    {
+      "title": "A Nightmare on Elm Street",
+      "year": 2010,
+      "aliases": [
+        "Nightmare on Elm Street 2010"
+      ]
+    }
+  ]
+}

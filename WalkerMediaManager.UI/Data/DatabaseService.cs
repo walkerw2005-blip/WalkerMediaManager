@@ -3,20 +3,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Data.Sqlite;
+using WalkerMediaManager.UI.Services;
 
 namespace WalkerMediaManager.UI.Data;
 
 public static class DatabaseService
 {
-    private const int CurrentDatabaseVersion = 7;
+    private const int CurrentDatabaseVersion = 11;
 
-    public static string DatabasePath =>
-        Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-            "AppData",
-            "Local",
-            "WalkerMediaManager",
-            "walker.db");
+    public static string DatabasePath => ApplicationPaths.DatabasePath;
 
     public static void Initialize()
     {
@@ -29,7 +24,15 @@ public static class DatabaseService
         }
 
         Directory.CreateDirectory(databaseFolder);
-        MigrateNewestPackagedDatabaseIfNeeded();
+        ImportLegacyPackagedDatabaseIfNeeded();
+
+        if (File.Exists(DatabasePath))
+        {
+            ValidateDatabaseIntegrity(DatabasePath, "active database");
+            DatabaseBackupService.CreateDailyBackupAsync()
+                .GetAwaiter()
+                .GetResult();
+        }
 
         using SqliteConnection connection =
             new($"Data Source={DatabasePath}");
@@ -85,6 +88,34 @@ public static class DatabaseService
             {
                 ApplyVersion7Migration(connection, transaction);
                 SetDatabaseVersion(connection, transaction, 7);
+                version = 7;
+            }
+
+            if (version < 8)
+            {
+                ApplyVersion8Migration(connection, transaction);
+                SetDatabaseVersion(connection, transaction, 8);
+                version = 8;
+            }
+
+            if (version < 9)
+            {
+                ApplyVersion9Migration(connection, transaction);
+                SetDatabaseVersion(connection, transaction, 9);
+                version = 9;
+            }
+
+            if (version < 10)
+            {
+                ApplyVersion10Migration(connection, transaction);
+                SetDatabaseVersion(connection, transaction, 10);
+                version = 10;
+            }
+
+            if (version < 11)
+            {
+                ApplyVersion11Migration(connection, transaction);
+                SetDatabaseVersion(connection, transaction, 11);
             }
 
             EnsureIndexes(connection, transaction);
@@ -107,8 +138,15 @@ public static class DatabaseService
     }
 
 
-    private static void MigrateNewestPackagedDatabaseIfNeeded()
+    private static void ImportLegacyPackagedDatabaseIfNeeded()
     {
+        if (File.Exists(DatabasePath))
+        {
+            DiagnosticsService.Log(
+                "Canonical database already exists; legacy database import skipped.");
+            return;
+        }
+
         try
         {
             string packagesFolder = Path.Combine(
@@ -117,7 +155,12 @@ public static class DatabaseService
                 "Local",
                 "Packages");
 
-            if (!Directory.Exists(packagesFolder)) return;
+            if (!Directory.Exists(packagesFolder))
+            {
+                DiagnosticsService.Log(
+                    "Windows Packages folder was not found; legacy database import skipped.");
+                return;
+            }
 
             string? newestCandidate = Directory
                 .EnumerateFiles(packagesFolder, "walker.db", SearchOption.AllDirectories)
@@ -127,29 +170,81 @@ public static class DatabaseService
                 .OrderByDescending(File.GetLastWriteTimeUtc)
                 .FirstOrDefault();
 
-            if (string.IsNullOrWhiteSpace(newestCandidate) ||
-                string.Equals(newestCandidate, DatabasePath, StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrWhiteSpace(newestCandidate))
             {
+                DiagnosticsService.Log(
+                    "No legacy packaged database was found; a new database will be created.");
                 return;
             }
 
-            bool shouldMigrate = !File.Exists(DatabasePath) ||
-                                 File.GetLastWriteTimeUtc(newestCandidate) >
-                                 File.GetLastWriteTimeUtc(DatabasePath).AddSeconds(2);
+            ValidateDatabaseIntegrity(newestCandidate, "legacy database candidate");
 
-            if (!shouldMigrate) return;
+            string temporaryImportPath = DatabasePath + ".importing";
+            TryDeleteFile(temporaryImportPath);
+            File.Copy(newestCandidate, temporaryImportPath, true);
+            ValidateDatabaseIntegrity(temporaryImportPath, "copied legacy database");
+            File.Move(temporaryImportPath, DatabasePath, true);
 
-            if (File.Exists(DatabasePath))
-            {
-                string backupPath = DatabasePath + ".pre-portable-migration.bak";
-                File.Copy(DatabasePath, backupPath, true);
-            }
-
-            File.Copy(newestCandidate, DatabasePath, true);
+            DiagnosticsService.Log(
+                $"Legacy database imported from '{newestCandidate}' to '{DatabasePath}'.");
         }
-        catch
+        catch (Exception exception)
         {
-            // Database initialization will continue with the canonical database.
+            DiagnosticsService.LogException(
+                "Legacy database import failed. The existing source database was not modified.",
+                exception);
+            throw new InvalidOperationException(
+                "Walker Media Manager found an older database but could not import it safely. " +
+                "No source data was changed. See the diagnostic log for details.",
+                exception);
+        }
+    }
+
+    private static void ValidateDatabaseIntegrity(
+        string databasePath,
+        string description)
+    {
+        if (!File.Exists(databasePath))
+        {
+            throw new FileNotFoundException(
+                $"The {description} was not found at '{databasePath}'.",
+                databasePath);
+        }
+
+        using SqliteConnection connection =
+            new($"Data Source={databasePath};Mode=ReadOnly");
+        connection.Open();
+
+        using SqliteCommand command = connection.CreateCommand();
+        command.CommandText = "PRAGMA integrity_check;";
+
+        string result = command.ExecuteScalar()?.ToString() ?? string.Empty;
+
+        if (!string.Equals(result, "ok", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidDataException(
+                $"SQLite integrity validation failed for the {description} at " +
+                $"'{databasePath}'. Result: '{result}'.");
+        }
+
+        DiagnosticsService.Log(
+            $"SQLite integrity validation passed for the {description}: {databasePath}");
+    }
+
+    private static void TryDeleteFile(string path)
+    {
+        try
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+        catch (Exception exception)
+        {
+            DiagnosticsService.LogException(
+                $"Could not remove temporary database file '{path}'.",
+                exception);
         }
     }
 
@@ -190,14 +285,26 @@ public static class DatabaseService
                 Id INTEGER PRIMARY KEY AUTOINCREMENT,
                 Title TEXT NOT NULL,
                 Seasons INTEGER NOT NULL DEFAULT 0,
+                TotalSeasons INTEGER NOT NULL DEFAULT 0,
                 Episodes INTEGER NOT NULL DEFAULT 0
             );
 
             CREATE TABLE IF NOT EXISTS Wishlist
             (
                 Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                MediaType TEXT NOT NULL DEFAULT 'Movie',
                 Title TEXT NOT NULL,
-                Priority INTEGER NOT NULL DEFAULT 2
+                NormalizedTitle TEXT NOT NULL DEFAULT '',
+                Year INTEGER NOT NULL DEFAULT 0,
+                TMDbId INTEGER NULL,
+                PreferredFormat TEXT NOT NULL DEFAULT '',
+                TargetPrice REAL NULL,
+                PreferredStore TEXT NOT NULL DEFAULT '',
+                Priority INTEGER NOT NULL DEFAULT 2,
+                Notes TEXT NOT NULL DEFAULT '',
+                DateAdded TEXT NOT NULL DEFAULT '',
+                LastUpdated TEXT NOT NULL DEFAULT '',
+                IsPurchased INTEGER NOT NULL DEFAULT 0
             );
 
             CREATE TABLE IF NOT EXISTS Collections
@@ -415,6 +522,151 @@ public static class DatabaseService
         EnsureColumn(connection, transaction, "Movies", "PlexLibraryTitle", "TEXT NOT NULL DEFAULT ''");
     }
 
+
+    private static void ApplyVersion10Migration(
+        SqliteConnection connection,
+        SqliteTransaction transaction)
+    {
+        EnsureColumn(connection, transaction, "TVShows", "TotalSeasons", "INTEGER NOT NULL DEFAULT 0");
+    }
+
+    private static void ApplyVersion11Migration(
+        SqliteConnection connection,
+        SqliteTransaction transaction)
+    {
+        EnsureColumn(connection, transaction, "TVShows", "TVMazeId", "INTEGER NULL");
+        EnsureColumn(connection, transaction, "TVShows", "Status", "TEXT NOT NULL DEFAULT ''");
+        EnsureColumn(connection, transaction, "TVShows", "FirstAirDate", "TEXT NOT NULL DEFAULT ''");
+        EnsureColumn(connection, transaction, "TVShows", "LastAirDate", "TEXT NOT NULL DEFAULT ''");
+        EnsureColumn(connection, transaction, "TVShows", "Network", "TEXT NOT NULL DEFAULT ''");
+        EnsureColumn(connection, transaction, "TVShows", "MetadataLastSynced", "TEXT NOT NULL DEFAULT ''");
+    }
+
+
+    private static void ApplyVersion9Migration(
+        SqliteConnection connection,
+        SqliteTransaction transaction)
+    {
+        ExecuteNonQuery(
+            connection,
+            transaction,
+            """
+            CREATE TABLE IF NOT EXISTS TVSeasons
+            (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                TVShowId INTEGER NOT NULL,
+                SeasonNumber INTEGER NOT NULL,
+                Name TEXT NOT NULL DEFAULT '',
+                EpisodeCount INTEGER NOT NULL DEFAULT 0,
+                IsOwned INTEGER NOT NULL DEFAULT 1,
+                Format TEXT NOT NULL DEFAULT 'DVD',
+                HasDigitalCopy INTEGER NOT NULL DEFAULT 1,
+                PurchasePrice REAL NULL,
+                PurchaseDate TEXT NOT NULL DEFAULT '',
+                StorageLocation TEXT NOT NULL DEFAULT '',
+                Notes TEXT NOT NULL DEFAULT '',
+                CreatedAt TEXT NOT NULL DEFAULT (datetime('now')),
+                UpdatedAt TEXT NOT NULL DEFAULT (datetime('now')),
+                FOREIGN KEY (TVShowId) REFERENCES TVShows(Id) ON DELETE CASCADE,
+                UNIQUE (TVShowId, SeasonNumber)
+            );
+
+            INSERT OR IGNORE INTO TVSeasons
+                (TVShowId, SeasonNumber, Name, IsOwned, Format, HasDigitalCopy)
+            WITH RECURSIVE SeasonNumbers(TVShowId, SeasonNumber, MaxSeason) AS
+            (
+                SELECT Id, 1, Seasons FROM TVShows WHERE Seasons > 0
+                UNION ALL
+                SELECT TVShowId, SeasonNumber + 1, MaxSeason
+                FROM SeasonNumbers
+                WHERE SeasonNumber < MaxSeason
+            )
+            SELECT TVShowId, SeasonNumber, 'Season ' || SeasonNumber, 1, 'DVD', 1
+            FROM SeasonNumbers;
+            """);
+    }
+
+    private static void ApplyVersion8Migration(
+        SqliteConnection connection,
+        SqliteTransaction transaction)
+    {
+        EnsureColumn(connection, transaction, "Wishlist", "MediaType", "TEXT NOT NULL DEFAULT 'Movie'");
+        EnsureColumn(connection, transaction, "Wishlist", "NormalizedTitle", "TEXT NOT NULL DEFAULT ''");
+        EnsureColumn(connection, transaction, "Wishlist", "Year", "INTEGER NOT NULL DEFAULT 0");
+        EnsureColumn(connection, transaction, "Wishlist", "TMDbId", "INTEGER NULL");
+        EnsureColumn(connection, transaction, "Wishlist", "PreferredFormat", "TEXT NOT NULL DEFAULT ''");
+        EnsureColumn(connection, transaction, "Wishlist", "TargetPrice", "REAL NULL");
+        EnsureColumn(connection, transaction, "Wishlist", "PreferredStore", "TEXT NOT NULL DEFAULT ''");
+        EnsureColumn(connection, transaction, "Wishlist", "Notes", "TEXT NOT NULL DEFAULT ''");
+        EnsureColumn(connection, transaction, "Wishlist", "DateAdded", "TEXT NOT NULL DEFAULT ''");
+        EnsureColumn(connection, transaction, "Wishlist", "LastUpdated", "TEXT NOT NULL DEFAULT ''");
+        EnsureColumn(connection, transaction, "Wishlist", "IsPurchased", "INTEGER NOT NULL DEFAULT 0");
+
+        ExecuteNonQuery(
+            connection,
+            transaction,
+            """
+            UPDATE Wishlist
+            SET MediaType = 'Movie'
+            WHERE MediaType IS NULL OR TRIM(MediaType) = '';
+
+            UPDATE Wishlist
+            SET DateAdded = datetime('now')
+            WHERE DateAdded IS NULL OR TRIM(DateAdded) = '';
+
+            UPDATE Wishlist
+            SET LastUpdated = DateAdded
+            WHERE LastUpdated IS NULL OR TRIM(LastUpdated) = '';
+            """);
+
+        BackfillWishlistNormalizedTitles(connection, transaction);
+    }
+
+    private static void BackfillWishlistNormalizedTitles(
+        SqliteConnection connection,
+        SqliteTransaction transaction)
+    {
+        List<(int Id, string Title)> rows = [];
+
+        using (SqliteCommand selectCommand = connection.CreateCommand())
+        {
+            selectCommand.Transaction = transaction;
+            selectCommand.CommandText =
+                """
+                SELECT Id, Title
+                FROM Wishlist
+                WHERE NormalizedTitle IS NULL
+                   OR TRIM(NormalizedTitle) = '';
+                """;
+
+            using SqliteDataReader reader = selectCommand.ExecuteReader();
+
+            while (reader.Read())
+            {
+                rows.Add((
+                    reader.GetInt32(0),
+                    reader.IsDBNull(1) ? string.Empty : reader.GetString(1)));
+            }
+        }
+
+        foreach ((int id, string title) in rows)
+        {
+            using SqliteCommand updateCommand = connection.CreateCommand();
+            updateCommand.Transaction = transaction;
+            updateCommand.CommandText =
+                """
+                UPDATE Wishlist
+                SET NormalizedTitle = $normalizedTitle
+                WHERE Id = $id;
+                """;
+            updateCommand.Parameters.AddWithValue(
+                "$normalizedTitle",
+                MediaDuplicateService.NormalizeTitle(title));
+            updateCommand.Parameters.AddWithValue("$id", id);
+            updateCommand.ExecuteNonQuery();
+        }
+    }
+
     private static void EnsureIndexes(
         SqliteConnection connection,
         SqliteTransaction transaction)
@@ -435,8 +687,26 @@ public static class DatabaseService
             CREATE INDEX IF NOT EXISTS IX_TVShows_PlexGuid
                 ON TVShows (PlexGuid);
 
+            CREATE INDEX IF NOT EXISTS IX_TVSeasons_TVShowId
+                ON TVSeasons (TVShowId);
+
+            CREATE UNIQUE INDEX IF NOT EXISTS IX_TVSeasons_ShowSeason
+                ON TVSeasons (TVShowId, SeasonNumber);
+
             CREATE INDEX IF NOT EXISTS IX_Wishlist_Title
                 ON Wishlist (Title);
+
+            CREATE INDEX IF NOT EXISTS IX_Wishlist_NormalizedTitle
+                ON Wishlist (NormalizedTitle);
+
+            CREATE INDEX IF NOT EXISTS IX_Wishlist_NormalizedTitle_Year
+                ON Wishlist (NormalizedTitle, Year);
+
+            CREATE INDEX IF NOT EXISTS IX_Wishlist_IsPurchased
+                ON Wishlist (IsPurchased);
+
+            CREATE INDEX IF NOT EXISTS IX_Wishlist_Priority
+                ON Wishlist (Priority);
 
             CREATE INDEX IF NOT EXISTS IX_Collections_Name
                 ON Collections (Name);

@@ -1,0 +1,23 @@
+{
+  "id": "monsters-inc",
+  "name": "Monsters, Inc.",
+  "description": "The Monsters, Inc. theatrical films",
+  "category": "Animation",
+  "studio": "Pixar",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Monsters, Inc.",
+      "year": 2001,
+      "aliases": [
+        "Monsters Inc"
+      ]
+    },
+    {
+      "title": "Monsters University",
+      "year": 2013,
+      "aliases": []
+    }
+  ]
+}

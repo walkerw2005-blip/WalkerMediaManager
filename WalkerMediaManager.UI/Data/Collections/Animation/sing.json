@@ -1,0 +1,21 @@
+{
+  "id": "sing",
+  "name": "Sing",
+  "description": "The Sing theatrical films",
+  "category": "Animation",
+  "studio": "Illumination",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Sing",
+      "year": 2016,
+      "aliases": []
+    },
+    {
+      "title": "Sing 2",
+      "year": 2021,
+      "aliases": []
+    }
+  ]
+}

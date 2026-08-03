@@ -1,0 +1,24 @@
+{
+  "id": "top-gun",
+  "name": "Top Gun",
+  "description": "The Top Gun theatrical films",
+  "category": "Action",
+  "studio": "Paramount Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Top Gun",
+      "year": 1986,
+      "aliases": []
+    },
+    {
+      "title": "Top Gun: Maverick",
+      "year": 2022,
+      "aliases": [
+        "Top Gun Maverick",
+        "Top Gun 2"
+      ]
+    }
+  ]
+}

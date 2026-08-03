@@ -1,56 +1,77 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 using WalkerMediaManager.UI.Data;
 using WalkerMediaManager.UI.Models;
+using WalkerMediaManager.UI.Services;
 
 namespace WalkerMediaManager.UI.Repositories;
 
 public sealed class SmartBuyRepository
 {
-    private static readonly Dictionary<string, int> FormatRanks =
-        new(StringComparer.OrdinalIgnoreCase)
-        {
-            ["VHS"] = 10,
-            ["LaserDisc"] = 20,
-            ["DVD"] = 30,
-            ["Digital"] = 35,
-            ["Blu-ray"] = 40,
-            ["3D Blu-ray"] = 45,
-            ["4K UHD"] = 50,
-            ["4K UHD Blu-ray"] = 50
-        };
+    private static readonly UpgradeAdvisorService UpgradeAdvisor = new();
 
-    public async Task<List<SmartBuyResult>> SearchAsync(
+    public Task<List<SmartBuyResult>> SearchAsync(
         string searchText,
         string plannedFormat,
         decimal? plannedPrice)
     {
+        return SearchAsync(searchText, plannedFormat, string.Empty, plannedPrice);
+    }
+
+    public async Task<List<SmartBuyResult>> SearchAsync(
+        string searchText,
+        string plannedFormat,
+        string plannedEdition,
+        decimal? plannedPrice)
+    {
+        string normalizedSearch = NormalizeSearchText(searchText);
+        if (string.IsNullOrWhiteSpace(normalizedSearch)) return [];
+
         List<SmartBuyResult> results = [];
-        string normalizedSearch = $"%{searchText.Trim()}%";
 
         await using SqliteConnection connection =
             new($"Data Source={DatabaseService.DatabasePath}");
         await connection.OpenAsync();
 
+        HashSet<string> wishlistTitles = await LoadWishlistTitlesAsync(connection);
+
         await SearchMoviesAsync(
             connection,
             normalizedSearch,
             plannedFormat,
+            plannedEdition,
             plannedPrice,
+            wishlistTitles,
             results);
 
         await SearchTvShowsAsync(
             connection,
             normalizedSearch,
             plannedPrice,
+            wishlistTitles,
+            results);
+
+        await SearchWishlistAsync(
+            connection,
+            normalizedSearch,
+            plannedFormat,
+            plannedEdition,
+            plannedPrice,
             results);
 
         return results
-            .OrderBy(result => result.Title, StringComparer.OrdinalIgnoreCase)
+            .GroupBy(result => $"{result.MediaType}|{result.Id}|{NormalizeSearchText(result.Title)}")
+            .Select(group => group.OrderByDescending(item => item.MatchScore).First())
+            .OrderByDescending(result => result.MatchScore)
+            .ThenByDescending(result => result.IsOwned)
+            .ThenBy(result => result.Title, StringComparer.OrdinalIgnoreCase)
             .ThenBy(result => result.Year)
+            .Take(25)
             .ToList();
     }
 
@@ -92,11 +113,24 @@ public sealed class SmartBuyRepository
         return Convert.ToInt32(await command.ExecuteScalarAsync()) > 0;
     }
 
+    private static async Task<HashSet<string>> LoadWishlistTitlesAsync(SqliteConnection connection)
+    {
+        HashSet<string> titles = new(StringComparer.OrdinalIgnoreCase);
+        await using SqliteCommand command = connection.CreateCommand();
+        command.CommandText = "SELECT Title FROM Wishlist WHERE TRIM(Title) <> '';";
+        await using SqliteDataReader reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+            titles.Add(NormalizeSearchText(GetString(reader, 0)));
+        return titles;
+    }
+
     private static async Task SearchMoviesAsync(
         SqliteConnection connection,
-        string searchText,
+        string normalizedSearch,
         string plannedFormat,
+        string plannedEdition,
         decimal? plannedPrice,
+        HashSet<string> wishlistTitles,
         List<SmartBuyResult> results)
     {
         await using SqliteCommand command = connection.CreateCommand();
@@ -112,10 +146,11 @@ public sealed class SmartBuyRepository
                 m.PlexRatingKey,
                 COUNT(c.Id) AS CopyCount,
                 GROUP_CONCAT(DISTINCT NULLIF(TRIM(c.Format), '')) AS Formats,
-                GROUP_CONCAT(DISTINCT NULLIF(TRIM(c.Location), '')) AS Locations
+                GROUP_CONCAT(DISTINCT NULLIF(TRIM(c.Location), '')) AS Locations,
+                GROUP_CONCAT(DISTINCT NULLIF(TRIM(c.Edition), '')) AS Editions,
+                GROUP_CONCAT(DISTINCT NULLIF(TRIM(c.Packaging), '')) AS Packaging
             FROM Movies m
             LEFT JOIN OwnedCopies c ON c.MovieId = m.Id
-            WHERE m.Title LIKE $searchText COLLATE NOCASE
             GROUP BY
                 m.Id,
                 m.Title,
@@ -123,14 +158,16 @@ public sealed class SmartBuyRepository
                 m.Rating,
                 m.Genre,
                 m.PosterPath,
-                m.PlexRatingKey
-            ORDER BY m.Title COLLATE NOCASE, m.ReleaseYear;
+                m.PlexRatingKey;
             """;
-        command.Parameters.AddWithValue("$searchText", searchText);
 
         await using SqliteDataReader reader = await command.ExecuteReaderAsync();
         while (await reader.ReadAsync())
         {
+            string title = GetString(reader, 1);
+            int matchScore = CalculateMatchScore(title, normalizedSearch);
+            if (matchScore <= 0) continue;
+
             int id = reader.GetInt32(0);
             int releaseYear = reader.IsDBNull(2) ? 0 : reader.GetInt32(2);
             string rating = GetString(reader, 3);
@@ -140,12 +177,14 @@ public sealed class SmartBuyRepository
             int copyCount = reader.IsDBNull(7) ? 0 : reader.GetInt32(7);
             string formats = NormalizeList(GetString(reader, 8));
             string locations = NormalizeList(GetString(reader, 9));
+            string editions = NormalizeList(GetString(reader, 10));
+            string packaging = NormalizeList(GetString(reader, 11));
 
             SmartBuyResult result = new()
             {
                 Id = id,
                 MediaType = "Movie",
-                Title = GetString(reader, 1),
+                Title = title,
                 Year = releaseYear,
                 Details = BuildMovieDetails(rating, genre),
                 PosterPath = posterPath,
@@ -155,19 +194,25 @@ public sealed class SmartBuyRepository
                 OwnedCopyCount = copyCount,
                 OwnedFormats = formats,
                 OwnedLocations = locations,
+                OwnedEditions = editions,
+                OwnedPackaging = packaging,
                 PlannedFormat = plannedFormat,
-                PlannedPrice = plannedPrice
+                PlannedEdition = plannedEdition,
+                PlannedPrice = plannedPrice,
+                IsWishlist = wishlistTitles.Contains(NormalizeSearchText(title)),
+                MatchScore = matchScore
             };
 
-            ApplyMovieRecommendation(result);
+            UpgradeAdvisor.ApplyRecommendation(result, plannedFormat, plannedEdition);
             results.Add(result);
         }
     }
 
     private static async Task SearchTvShowsAsync(
         SqliteConnection connection,
-        string searchText,
+        string normalizedSearch,
         decimal? plannedPrice,
+        HashSet<string> wishlistTitles,
         List<SmartBuyResult> results)
     {
         await using SqliteCommand command = connection.CreateCommand();
@@ -182,15 +227,16 @@ public sealed class SmartBuyRepository
                 Studio,
                 PosterPath,
                 PlexRatingKey
-            FROM TVShows
-            WHERE Title LIKE $searchText COLLATE NOCASE
-            ORDER BY Title COLLATE NOCASE, Year;
+            FROM TVShows;
             """;
-        command.Parameters.AddWithValue("$searchText", searchText);
 
         await using SqliteDataReader reader = await command.ExecuteReaderAsync();
         while (await reader.ReadAsync())
         {
+            string title = GetString(reader, 1);
+            int matchScore = CalculateMatchScore(title, normalizedSearch);
+            if (matchScore <= 0) continue;
+
             int id = reader.GetInt32(0);
             int seasons = reader.IsDBNull(3) ? 0 : reader.GetInt32(3);
             int episodes = reader.IsDBNull(4) ? 0 : reader.GetInt32(4);
@@ -201,7 +247,7 @@ public sealed class SmartBuyRepository
             {
                 Id = id,
                 MediaType = "TV Show",
-                Title = GetString(reader, 1),
+                Title = title,
                 Year = reader.IsDBNull(2) ? 0 : reader.GetInt32(2),
                 Details = BuildTvDetails(seasons, episodes, studio),
                 PosterPath = GetString(reader, 6),
@@ -210,6 +256,8 @@ public sealed class SmartBuyRepository
                     : $"tv-{ratingKey}",
                 OwnedCopyCount = 1,
                 PlannedPrice = plannedPrice,
+                IsWishlist = wishlistTitles.Contains(NormalizeSearchText(title)),
+                MatchScore = matchScore,
                 Recommendation = "Already in collection",
                 RecommendationDetail =
                     "This television series is already in your library. Check the season or box-set details before buying.",
@@ -219,72 +267,85 @@ public sealed class SmartBuyRepository
         }
     }
 
-    private static void ApplyMovieRecommendation(SmartBuyResult result)
+    private static async Task SearchWishlistAsync(
+        SqliteConnection connection,
+        string normalizedSearch,
+        string plannedFormat,
+        string plannedEdition,
+        decimal? plannedPrice,
+        List<SmartBuyResult> results)
     {
-        string plannedFormat = result.PlannedFormat.Trim();
-        List<string> ownedFormats = SplitValues(result.OwnedFormats);
-
-        if (result.OwnedCopyCount == 0)
+        await using SqliteCommand command = connection.CreateCommand();
+        command.CommandText = "SELECT Id, Title FROM Wishlist WHERE TRIM(Title) <> '';";
+        await using SqliteDataReader reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
         {
-            result.Recommendation = "Ownership details missing";
-            result.RecommendationDetail =
-                "The title is in your movie library, but no physical or digital copy has been recorded. Verify the copy before buying another one.";
-            result.RecommendationGlyph = "\uE7BA";
-            result.RecommendationColor = "#9D5D00";
-            return;
+            string title = GetString(reader, 1);
+            int matchScore = CalculateMatchScore(title, normalizedSearch);
+            if (matchScore <= 0) continue;
+
+            results.Add(new SmartBuyResult
+            {
+                Id = reader.GetInt32(0),
+                MediaType = "Wishlist",
+                Title = title,
+                Details = "Wishlist item",
+                PlannedFormat = plannedFormat,
+                PlannedEdition = plannedEdition,
+                PlannedPrice = plannedPrice,
+                IsWishlist = true,
+                MatchScore = matchScore - 5,
+                Recommendation = "On your wishlist",
+                RecommendationDetail = "You do not have a matching owned record, but this title is already on your wishlist.",
+                RecommendationGlyph = "\uE734",
+                RecommendationColor = "#9D5D00"
+            });
         }
-
-        if (string.IsNullOrWhiteSpace(plannedFormat))
-        {
-            result.Recommendation = "Already owned";
-            result.RecommendationDetail =
-                $"You already own {result.OwnedCopyCount} " +
-                (result.OwnedCopyCount == 1 ? "copy" : "copies") +
-                ". Select a planned format to check whether the purchase would be an upgrade.";
-            result.RecommendationGlyph = "\uE73E";
-            result.RecommendationColor = "#C42B1C";
-            return;
-        }
-
-        if (ownedFormats.Any(format =>
-                string.Equals(format, plannedFormat, StringComparison.OrdinalIgnoreCase)))
-        {
-            result.Recommendation = "Duplicate format";
-            result.RecommendationDetail =
-                $"You already own this title on {plannedFormat}. Do not buy unless this is a special edition or replacement copy.";
-            result.RecommendationGlyph = "\uEA39";
-            result.RecommendationColor = "#C42B1C";
-            return;
-        }
-
-        int plannedRank = GetFormatRank(plannedFormat);
-        int bestOwnedRank = ownedFormats.Count == 0
-            ? 0
-            : ownedFormats.Max(GetFormatRank);
-
-        if (plannedRank > bestOwnedRank && plannedRank > 0)
-        {
-            string bestOwned = ownedFormats
-                .OrderByDescending(GetFormatRank)
-                .FirstOrDefault() ?? "an older format";
-
-            result.Recommendation = "Upgrade available";
-            result.RecommendationDetail =
-                $"You own {bestOwned}; {plannedFormat} appears to be a format upgrade. Confirm the transfer and edition quality before buying.";
-            result.RecommendationGlyph = "\uE74A";
-            result.RecommendationColor = "#107C10";
-            return;
-        }
-
-        result.Recommendation = "Possible duplicate";
-        result.RecommendationDetail =
-            $"You already own this title on {result.FormatSummary}. The planned {plannedFormat} copy is not a clear format upgrade.";
-        result.RecommendationGlyph = "\uE7BA";
-        result.RecommendationColor = "#9D5D00";
     }
 
-    private static int GetFormatRank(string format) =>
-        FormatRanks.TryGetValue(format.Trim(), out int rank) ? rank : 0;
+    private static int CalculateMatchScore(string title, string normalizedSearch)
+    {
+        string normalizedTitle = NormalizeSearchText(title);
+        if (normalizedTitle.Length == 0) return 0;
+        if (normalizedTitle == normalizedSearch) return 1000;
+        if (normalizedTitle.StartsWith(normalizedSearch, StringComparison.Ordinal)) return 800;
+        if (normalizedTitle.Contains(normalizedSearch, StringComparison.Ordinal)) return 600;
+
+        string[] terms = normalizedSearch.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (terms.Length > 0 && terms.All(term => normalizedTitle.Contains(term, StringComparison.Ordinal)))
+            return 400 + terms.Length;
+
+        return 0;
+    }
+
+    private static string NormalizeSearchText(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return string.Empty;
+
+        string decomposed = value.Normalize(NormalizationForm.FormD);
+        StringBuilder builder = new(decomposed.Length);
+        bool previousWasSpace = true;
+
+        foreach (char character in decomposed)
+        {
+            UnicodeCategory category = CharUnicodeInfo.GetUnicodeCategory(character);
+            if (category == UnicodeCategory.NonSpacingMark) continue;
+
+            if (char.IsLetterOrDigit(character))
+            {
+                builder.Append(char.ToUpperInvariant(character));
+                previousWasSpace = false;
+            }
+            else if (!previousWasSpace)
+            {
+                builder.Append(' ');
+                previousWasSpace = true;
+            }
+        }
+
+        return builder.ToString().Trim();
+    }
+
 
     private static List<string> SplitValues(string value) =>
         string.IsNullOrWhiteSpace(value)

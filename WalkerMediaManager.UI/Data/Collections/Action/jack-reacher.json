@@ -1,0 +1,23 @@
+{
+  "id": "jack-reacher",
+  "name": "Jack Reacher",
+  "description": "The Jack Reacher theatrical films",
+  "category": "Action",
+  "studio": "Paramount Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Jack Reacher",
+      "year": 2012,
+      "aliases": []
+    },
+    {
+      "title": "Jack Reacher: Never Go Back",
+      "year": 2016,
+      "aliases": [
+        "Jack Reacher 2"
+      ]
+    }
+  ]
+}

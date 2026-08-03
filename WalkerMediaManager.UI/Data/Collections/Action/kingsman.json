@@ -1,0 +1,32 @@
+{
+  "id": "kingsman",
+  "name": "Kingsman",
+  "description": "The Kingsman theatrical films",
+  "category": "Action",
+  "studio": "20th Century Studios",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Kingsman: The Secret Service",
+      "year": 2014,
+      "aliases": [
+        "Kingsman The Secret Service"
+      ]
+    },
+    {
+      "title": "Kingsman: The Golden Circle",
+      "year": 2017,
+      "aliases": [
+        "Kingsman The Golden Circle"
+      ]
+    },
+    {
+      "title": "The King's Man",
+      "year": 2021,
+      "aliases": [
+        "The Kings Man"
+      ]
+    }
+  ]
+}

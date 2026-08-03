@@ -33,13 +33,23 @@
             <Grid ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="180" />
                     <ColumnDefinition Width="220" />
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <AutoSuggestBox x:Name="SearchBox" PlaceholderText="Search title, year, genre, director, or studio"
                                 QueryIcon="Find" TextChanged="SearchBox_TextChanged" />
-                <ComboBox x:Name="SortComboBox" Grid.Column="1" Header="Sort"
+                <ComboBox x:Name="FilterComboBox" Grid.Column="1" Header="Filter"
+                          SelectionChanged="FilterComboBox_SelectionChanged" SelectedIndex="0">
+                    <ComboBoxItem Content="All items" Tag="All" />
+                    <ComboBoxItem Content="Owned" Tag="Owned" />
+                    <ComboBoxItem Content="Not owned" Tag="NotOwned" />
+                    <ComboBoxItem Content="Missing artwork" Tag="MissingArtwork" />
+                    <ComboBoxItem Content="Linked to Plex" Tag="PlexLinked" />
+                    <ComboBoxItem Content="Not linked to Plex" Tag="NotPlexLinked" />
+                </ComboBox>
+                <ComboBox x:Name="SortComboBox" Grid.Column="2" Header="Sort"
                           SelectionChanged="SortComboBox_SelectionChanged" SelectedIndex="0">
                     <ComboBoxItem Content="Title A–Z" Tag="TitleAscending" />
                     <ComboBoxItem Content="Title Z–A" Tag="TitleDescending" />
@@ -48,9 +58,9 @@
                     <ComboBoxItem Content="Longest runtime" Tag="RuntimeDescending" />
                     <ComboBoxItem Content="Recently synced" Tag="RecentlySynced" />
                 </ComboBox>
-                <ToggleButton x:Name="GridViewToggle" Grid.Column="2" Content="Grid" IsChecked="True"
+                <ToggleButton x:Name="GridViewToggle" Grid.Column="3" Content="Grid" IsChecked="True"
                               VerticalAlignment="Bottom" Click="GridViewToggle_Click" />
-                <Button Grid.Column="3" Content="Add / Import" VerticalAlignment="Bottom" Click="ShowEditorButton_Click" />
+                <Button Grid.Column="4" Content="Add / Import" VerticalAlignment="Bottom" Click="ShowEditorButton_Click" />
             </Grid>
         </Border>
 

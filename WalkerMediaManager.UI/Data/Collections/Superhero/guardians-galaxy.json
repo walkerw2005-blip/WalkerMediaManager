@@ -1,0 +1,30 @@
+{
+  "id": "guardians-galaxy",
+  "name": "Guardians of the Galaxy",
+  "description": "The Guardians of the Galaxy trilogy",
+  "category": "Superhero",
+  "studio": "Marvel Studios",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Guardians of the Galaxy",
+      "year": 2014,
+      "aliases": []
+    },
+    {
+      "title": "Guardians of the Galaxy Vol. 2",
+      "year": 2017,
+      "aliases": [
+        "Guardians of the Galaxy 2"
+      ]
+    },
+    {
+      "title": "Guardians of the Galaxy Vol. 3",
+      "year": 2023,
+      "aliases": [
+        "Guardians of the Galaxy 3"
+      ]
+    }
+  ]
+}

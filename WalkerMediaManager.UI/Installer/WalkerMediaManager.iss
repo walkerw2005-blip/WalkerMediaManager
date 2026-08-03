@@ -1,5 +1,5 @@
 #define MyAppName "Walker Media Manager"
-#define MyAppVersion "1.0.0 RC1"
+#define MyAppVersion "1.0.0"
 #define MyAppPublisher "Walker Software"
 #define MyAppExeName "WalkerMediaManager.exe"
 
@@ -14,7 +14,7 @@ DefaultDirName={autopf}\Walker Media Manager
 DefaultGroupName=Walker Media Manager
 DisableProgramGroupPage=yes
 OutputDir=Output
-OutputBaseFilename=WalkerMediaManager-Setup-1.0.0-RC1
+OutputBaseFilename=WalkerMediaManager-Setup-1.0.0
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern

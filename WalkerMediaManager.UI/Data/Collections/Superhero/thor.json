@@ -1,0 +1,37 @@
+{
+  "id": "thor",
+  "name": "Thor",
+  "description": "The Thor theatrical films",
+  "category": "Superhero",
+  "studio": "Marvel Studios",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Thor",
+      "year": 2011,
+      "aliases": []
+    },
+    {
+      "title": "Thor: The Dark World",
+      "year": 2013,
+      "aliases": [
+        "Thor 2"
+      ]
+    },
+    {
+      "title": "Thor: Ragnarok",
+      "year": 2017,
+      "aliases": [
+        "Thor 3"
+      ]
+    },
+    {
+      "title": "Thor: Love and Thunder",
+      "year": 2022,
+      "aliases": [
+        "Thor 4"
+      ]
+    }
+  ]
+}

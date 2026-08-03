@@ -1,0 +1,39 @@
+{
+  "id": "robocop",
+  "name": "RoboCop",
+  "description": "The RoboCop theatrical films",
+  "category": "SciFi",
+  "studio": "Orion Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "RoboCop",
+      "year": 1987,
+      "aliases": [
+        "Robocop"
+      ]
+    },
+    {
+      "title": "RoboCop 2",
+      "year": 1990,
+      "aliases": [
+        "Robocop 2"
+      ]
+    },
+    {
+      "title": "RoboCop 3",
+      "year": 1993,
+      "aliases": [
+        "Robocop 3"
+      ]
+    },
+    {
+      "title": "RoboCop",
+      "year": 2014,
+      "aliases": [
+        "Robocop 2014"
+      ]
+    }
+  ]
+}

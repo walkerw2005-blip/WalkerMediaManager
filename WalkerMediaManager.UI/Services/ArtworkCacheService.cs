@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
@@ -17,8 +19,23 @@ public sealed class ArtworkCacheService
     private const string CredentialResource = "WalkerMediaManager.Plex";
     private const string CredentialUserName = "PlexToken";
     private const string CacheFolderName = "ArtworkCache";
+    private const string MissingMarkerExtension = ".missing";
 
-    private readonly HttpClient _httpClient = new() { Timeout = TimeSpan.FromSeconds(60) };
+    private static readonly TimeSpan MissingArtworkRetryDelay = TimeSpan.FromHours(24);
+    private static readonly TimeSpan CacheRetention = TimeSpan.FromDays(120);
+
+    private readonly HttpClient _httpClient = new()
+    {
+        Timeout = TimeSpan.FromSeconds(30)
+    };
+
+    private readonly ConcurrentDictionary<string, StorageFile> _memoryCache =
+        new(StringComparer.OrdinalIgnoreCase);
+
+    private readonly ConcurrentDictionary<string, Lazy<Task<StorageFile?>>> _inFlightRequests =
+        new(StringComparer.OrdinalIgnoreCase);
+
+    private int _cleanupStarted;
 
     public static ArtworkCacheService Current { get; } = new();
 
@@ -33,132 +50,108 @@ public sealed class ArtworkCacheService
     {
         if (string.IsNullOrWhiteSpace(artworkPath))
         {
-            Debug.WriteLine("Artwork skipped: artwork path is empty.");
             return null;
         }
 
+        artworkPath = artworkPath.Trim();
+
+        // Plex artwork paths commonly begin with "/". On Windows, Path.IsPathRooted
+        // also returns true for those server-relative paths, so only treat a rooted
+        // path as local when a real file exists at that location.
         if (Path.IsPathRooted(artworkPath) && File.Exists(artworkPath))
         {
-            Debug.WriteLine($"Artwork loaded from local path: {artworkPath}");
-            return await StorageFile.GetFileFromPathAsync(artworkPath);
+            return await GetLocalFileAsync(artworkPath);
         }
 
-        string serverUrl = SettingsService.GetString(ServerUrlSettingKey);
-        string token = LoadToken();
+        string folderPath = GetCacheFolderPath();
+        StartCleanupOnce(folderPath);
 
-        if (string.IsNullOrWhiteSpace(serverUrl))
-        {
-            Debug.WriteLine("Artwork download skipped: Plex server URL is missing.");
-            return null;
-        }
-
-        if (string.IsNullOrWhiteSpace(token))
-        {
-            Debug.WriteLine("Artwork download skipped: Plex token is missing.");
-            return null;
-        }
-
-        string folderPath = Path.Combine(SettingsService.AppDataFolder, CacheFolderName);
-        Directory.CreateDirectory(folderPath);
-
-        string key = string.IsNullOrWhiteSpace(cacheKey)
-            ? artworkPath
-            : cacheKey + "|" + artworkPath;
+        string key = BuildCacheKey(artworkPath, cacheKey);
         string filePath = Path.Combine(folderPath, CreateFileName(key));
 
-        if (File.Exists(filePath) && new FileInfo(filePath).Length > 0)
-        {
-            Debug.WriteLine($"Artwork cache hit: {filePath}");
-            return await StorageFile.GetFileFromPathAsync(filePath);
-        }
-
-        Uri uri = BuildArtworkUri(serverUrl, artworkPath, token);
-        Debug.WriteLine($"Artwork request: {SanitizeUriForLogging(uri)}");
-
-        using HttpRequestMessage request = new(HttpMethod.Get, uri);
-        request.Headers.TryAddWithoutValidation("X-Plex-Token", token);
-        request.Headers.TryAddWithoutValidation("X-Plex-Product", "Walker Media Manager");
-        request.Headers.TryAddWithoutValidation("X-Plex-Client-Identifier", "walker-media-manager");
-        request.Headers.TryAddWithoutValidation("Accept", "image/*");
-
-        using HttpResponseMessage response = await _httpClient.SendAsync(
-            request,
-            HttpCompletionOption.ResponseHeadersRead,
-            cancellationToken);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            Debug.WriteLine(
-                $"Artwork request failed: {(int)response.StatusCode} {response.ReasonPhrase}; " +
-                SanitizeUriForLogging(uri));
-            response.EnsureSuccessStatusCode();
-        }
-
-        string? mediaType = response.Content.Headers.ContentType?.MediaType;
-        if (!string.IsNullOrWhiteSpace(mediaType) &&
-            !mediaType.StartsWith("image/", StringComparison.OrdinalIgnoreCase) &&
-            !mediaType.Equals("application/octet-stream", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new InvalidDataException(
-                $"Plex returned '{mediaType}' instead of image data for artwork path '{artworkPath}'.");
-        }
-
-        string temporaryPath = filePath + ".tmp";
-        try
-        {
-            await using (FileStream target = new(
-                             temporaryPath,
-                             FileMode.Create,
-                             FileAccess.Write,
-                             FileShare.None,
-                             81920,
-                             useAsync: true))
-            {
-                await response.Content.CopyToAsync(target, cancellationToken);
-                await target.FlushAsync(cancellationToken);
-            }
-
-            if (new FileInfo(temporaryPath).Length == 0)
-            {
-                throw new InvalidDataException(
-                    $"Plex returned an empty artwork file for '{artworkPath}'.");
-            }
-
-            File.Move(temporaryPath, filePath, true);
-        }
-        catch
+        if (_memoryCache.TryGetValue(filePath, out StorageFile? memoryFile))
         {
             try
             {
-                if (File.Exists(temporaryPath)) File.Delete(temporaryPath);
+                if (File.Exists(memoryFile.Path) && new FileInfo(memoryFile.Path).Length > 0)
+                {
+                    TouchFile(memoryFile.Path);
+                    return memoryFile;
+                }
             }
             catch
             {
-                // Preserve the original exception.
+                // Remove stale memory entries and continue with the disk/download path.
             }
 
-            throw;
+            _memoryCache.TryRemove(filePath, out _);
         }
 
-        Debug.WriteLine($"Artwork cached: {filePath}");
-        return await StorageFile.GetFileFromPathAsync(filePath);
+        StorageFile? diskFile = await TryGetCachedFileAsync(filePath);
+        if (diskFile is not null)
+        {
+            _memoryCache[filePath] = diskFile;
+            return diskFile;
+        }
+
+        string missingMarkerPath = filePath + MissingMarkerExtension;
+        if (IsNegativeCacheActive(missingMarkerPath))
+        {
+            Debug.WriteLine($"Artwork negative-cache hit: {artworkPath}");
+            return null;
+        }
+
+        Lazy<Task<StorageFile?>> lazyRequest = _inFlightRequests.GetOrAdd(
+            filePath,
+            _ => new Lazy<Task<StorageFile?>>(
+                () => DownloadAndCacheAsync(
+                    artworkPath,
+                    filePath,
+                    missingMarkerPath,
+                    CancellationToken.None),
+                LazyThreadSafetyMode.ExecutionAndPublication));
+
+        try
+        {
+            StorageFile? result = await lazyRequest.Value.WaitAsync(cancellationToken);
+            if (result is not null)
+            {
+                _memoryCache[filePath] = result;
+            }
+
+            return result;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            return null;
+        }
+        catch (Exception exception)
+        {
+            DiagnosticsService.LogException(
+                $"Could not load artwork '{artworkPath}'.",
+                exception);
+            return null;
+        }
+        finally
+        {
+            if (lazyRequest.IsValueCreated && lazyRequest.Value.IsCompleted)
+            {
+                _inFlightRequests.TryRemove(filePath, out _);
+            }
+        }
     }
 
     public Task ClearCacheAsync()
     {
-        string folderPath = Path.Combine(SettingsService.AppDataFolder, CacheFolderName);
+        _memoryCache.Clear();
+        _inFlightRequests.Clear();
+
+        string folderPath = GetCacheFolderPath();
         if (Directory.Exists(folderPath))
         {
             foreach (string filePath in Directory.EnumerateFiles(folderPath))
             {
-                try
-                {
-                    File.Delete(filePath);
-                }
-                catch (Exception exception)
-                {
-                    DiagnosticsService.LogException($"Could not delete cached artwork '{filePath}'.", exception);
-                }
+                TryDeleteFile(filePath);
             }
         }
 
@@ -166,7 +159,289 @@ public sealed class ArtworkCacheService
         return Task.CompletedTask;
     }
 
-    private static Uri BuildArtworkUri(string serverUrl, string artworkPath, string token)
+    private async Task<StorageFile?> DownloadAndCacheAsync(
+        string artworkPath,
+        string filePath,
+        string missingMarkerPath,
+        CancellationToken cancellationToken)
+    {
+        bool isExternalWebArtwork = Uri.TryCreate(artworkPath, UriKind.Absolute, out Uri? absoluteArtworkUri) &&
+                                    (absoluteArtworkUri.Scheme.Equals(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) ||
+                                     absoluteArtworkUri.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase));
+
+        string serverUrl = string.Empty;
+        string token = string.Empty;
+        Uri uri;
+
+        if (isExternalWebArtwork)
+        {
+            // TV metadata providers return complete HTTPS image URLs. These must be downloaded
+            // directly and must not depend on Plex settings or receive a Plex token.
+            uri = absoluteArtworkUri!;
+        }
+        else
+        {
+            serverUrl = SettingsService.GetString(ServerUrlSettingKey);
+            token = LoadToken();
+
+            if (string.IsNullOrWhiteSpace(serverUrl) || string.IsNullOrWhiteSpace(token))
+            {
+                return null;
+            }
+
+            uri = BuildPlexArtworkUri(serverUrl, artworkPath, token);
+        }
+
+        Debug.WriteLine($"Artwork request: {SanitizeUriForLogging(uri)}");
+
+        using HttpRequestMessage request = new(HttpMethod.Get, uri);
+        request.Headers.TryAddWithoutValidation("Accept", "image/*");
+        request.Headers.TryAddWithoutValidation("User-Agent", "WalkerMediaManager/1.0");
+
+        if (!isExternalWebArtwork)
+        {
+            request.Headers.TryAddWithoutValidation("X-Plex-Token", token);
+            request.Headers.TryAddWithoutValidation("X-Plex-Product", "Walker Media Manager");
+            request.Headers.TryAddWithoutValidation("X-Plex-Client-Identifier", "walker-media-manager");
+        }
+
+        try
+        {
+            using HttpResponseMessage response = await _httpClient.SendAsync(
+                request,
+                HttpCompletionOption.ResponseHeadersRead,
+                cancellationToken);
+
+            if (response.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.Gone)
+            {
+                WriteNegativeCacheMarker(missingMarkerPath);
+                return null;
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                Debug.WriteLine(
+                    $"Artwork request failed: {(int)response.StatusCode} {response.ReasonPhrase}; " +
+                    SanitizeUriForLogging(uri));
+                return null;
+            }
+
+            string? mediaType = response.Content.Headers.ContentType?.MediaType;
+            if (!string.IsNullOrWhiteSpace(mediaType) &&
+                !mediaType.StartsWith("image/", StringComparison.OrdinalIgnoreCase) &&
+                !mediaType.Equals("application/octet-stream", StringComparison.OrdinalIgnoreCase))
+            {
+                WriteNegativeCacheMarker(missingMarkerPath);
+                return null;
+            }
+
+            string temporaryPath = filePath + ".tmp";
+            TryDeleteFile(temporaryPath);
+
+            try
+            {
+                await using FileStream target = new(
+                    temporaryPath,
+                    FileMode.Create,
+                    FileAccess.Write,
+                    FileShare.None,
+                    81920,
+                    useAsync: true);
+
+                await response.Content.CopyToAsync(target, cancellationToken);
+                await target.FlushAsync(cancellationToken);
+
+                if (new FileInfo(temporaryPath).Length == 0)
+                {
+                    WriteNegativeCacheMarker(missingMarkerPath);
+                    return null;
+                }
+
+                File.Move(temporaryPath, filePath, true);
+                TryDeleteFile(missingMarkerPath);
+
+                StorageFile cachedFile = await StorageFile.GetFileFromPathAsync(filePath);
+                Debug.WriteLine($"Artwork cached: {filePath}");
+                return cachedFile;
+            }
+            finally
+            {
+                TryDeleteFile(temporaryPath);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (HttpRequestException exception)
+        {
+            Debug.WriteLine($"Artwork network error: {exception.Message}");
+            return null;
+        }
+        catch (Exception exception)
+        {
+            DiagnosticsService.LogException(
+                $"Could not download artwork '{artworkPath}'.",
+                exception);
+            return null;
+        }
+    }
+
+    private static async Task<StorageFile?> GetLocalFileAsync(string artworkPath)
+    {
+        try
+        {
+            if (!File.Exists(artworkPath) || new FileInfo(artworkPath).Length == 0)
+            {
+                return null;
+            }
+
+            return await StorageFile.GetFileFromPathAsync(artworkPath);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static async Task<StorageFile?> TryGetCachedFileAsync(string filePath)
+    {
+        try
+        {
+            if (!File.Exists(filePath) || new FileInfo(filePath).Length == 0)
+            {
+                return null;
+            }
+
+            TouchFile(filePath);
+            return await StorageFile.GetFileFromPathAsync(filePath);
+        }
+        catch
+        {
+            TryDeleteFile(filePath);
+            return null;
+        }
+    }
+
+    private static string BuildCacheKey(string artworkPath, string cacheKey)
+    {
+        return string.IsNullOrWhiteSpace(cacheKey)
+            ? artworkPath
+            : cacheKey.Trim() + "|" + artworkPath;
+    }
+
+    private static bool IsNegativeCacheActive(string markerPath)
+    {
+        try
+        {
+            if (!File.Exists(markerPath))
+            {
+                return false;
+            }
+
+            if (DateTime.UtcNow - File.GetLastWriteTimeUtc(markerPath) < MissingArtworkRetryDelay)
+            {
+                return true;
+            }
+
+            File.Delete(markerPath);
+        }
+        catch
+        {
+            // A marker that cannot be read should not permanently block artwork loading.
+        }
+
+        return false;
+    }
+
+    private static void WriteNegativeCacheMarker(string markerPath)
+    {
+        try
+        {
+            File.WriteAllText(markerPath, DateTime.UtcNow.ToString("O"));
+        }
+        catch
+        {
+            // Negative caching is an optimization only.
+        }
+    }
+
+    private void StartCleanupOnce(string folderPath)
+    {
+        if (Interlocked.Exchange(ref _cleanupStarted, 1) != 0)
+        {
+            return;
+        }
+
+        _ = Task.Run(() => CleanupOldCacheFiles(folderPath));
+    }
+
+    private static void CleanupOldCacheFiles(string folderPath)
+    {
+        try
+        {
+            if (!Directory.Exists(folderPath))
+            {
+                return;
+            }
+
+            DateTime cutoff = DateTime.UtcNow - CacheRetention;
+            foreach (string filePath in Directory.EnumerateFiles(folderPath))
+            {
+                try
+                {
+                    if (File.GetLastWriteTimeUtc(filePath) < cutoff)
+                    {
+                        File.Delete(filePath);
+                    }
+                }
+                catch
+                {
+                    // One locked or damaged cache file should not stop cleanup.
+                }
+            }
+        }
+        catch (Exception exception)
+        {
+            DiagnosticsService.LogException("Artwork cache cleanup failed.", exception);
+        }
+    }
+
+    private static string GetCacheFolderPath()
+    {
+        string folderPath = Path.Combine(SettingsService.AppDataFolder, CacheFolderName);
+        Directory.CreateDirectory(folderPath);
+        return folderPath;
+    }
+
+    private static void TouchFile(string filePath)
+    {
+        try
+        {
+            File.SetLastWriteTimeUtc(filePath, DateTime.UtcNow);
+        }
+        catch
+        {
+            // Cache access time is only used for cleanup decisions.
+        }
+    }
+
+    private static void TryDeleteFile(string filePath)
+    {
+        try
+        {
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+        }
+        catch
+        {
+            // Cache files are disposable and may occasionally be locked by the image decoder.
+        }
+    }
+
+    private static Uri BuildPlexArtworkUri(string serverUrl, string artworkPath, string token)
     {
         UriBuilder builder;
 

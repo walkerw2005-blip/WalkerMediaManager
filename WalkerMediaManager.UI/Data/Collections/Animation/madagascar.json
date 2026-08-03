@@ -1,0 +1,35 @@
+{
+  "id": "madagascar",
+  "name": "Madagascar",
+  "description": "The Madagascar theatrical films and Penguins spin-off",
+  "category": "Animation",
+  "studio": "DreamWorks Animation",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Madagascar",
+      "year": 2005,
+      "aliases": []
+    },
+    {
+      "title": "Madagascar: Escape 2 Africa",
+      "year": 2008,
+      "aliases": [
+        "Madagascar 2"
+      ]
+    },
+    {
+      "title": "Madagascar 3: Europe's Most Wanted",
+      "year": 2012,
+      "aliases": [
+        "Madagascar 3"
+      ]
+    },
+    {
+      "title": "Penguins of Madagascar",
+      "year": 2014,
+      "aliases": []
+    }
+  ]
+}

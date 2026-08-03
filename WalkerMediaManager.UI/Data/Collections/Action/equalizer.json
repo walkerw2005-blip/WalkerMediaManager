@@ -1,0 +1,32 @@
+{
+  "id": "equalizer",
+  "name": "The Equalizer",
+  "description": "The Equalizer theatrical films",
+  "category": "Action",
+  "studio": "Sony Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "The Equalizer",
+      "year": 2014,
+      "aliases": [
+        "Equalizer"
+      ]
+    },
+    {
+      "title": "The Equalizer 2",
+      "year": 2018,
+      "aliases": [
+        "Equalizer 2"
+      ]
+    },
+    {
+      "title": "The Equalizer 3",
+      "year": 2023,
+      "aliases": [
+        "Equalizer 3"
+      ]
+    }
+  ]
+}

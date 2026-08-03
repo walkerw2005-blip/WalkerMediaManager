@@ -1,0 +1,36 @@
+{
+  "id": "predator",
+  "name": "Predator",
+  "description": "The Predator theatrical films",
+  "category": "SciFi",
+  "studio": "20th Century Studios",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Predator",
+      "year": 1987,
+      "aliases": []
+    },
+    {
+      "title": "Predator 2",
+      "year": 1990,
+      "aliases": []
+    },
+    {
+      "title": "Predators",
+      "year": 2010,
+      "aliases": []
+    },
+    {
+      "title": "The Predator",
+      "year": 2018,
+      "aliases": []
+    },
+    {
+      "title": "Prey",
+      "year": 2022,
+      "aliases": []
+    }
+  ]
+}

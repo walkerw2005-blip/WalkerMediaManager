@@ -1,0 +1,32 @@
+{
+  "id": "bill-ted",
+  "name": "Bill & Ted",
+  "description": "The Bill & Ted theatrical films",
+  "category": "Comedy",
+  "studio": "Orion Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Bill & Ted's Excellent Adventure",
+      "year": 1989,
+      "aliases": [
+        "Bill and Teds Excellent Adventure"
+      ]
+    },
+    {
+      "title": "Bill & Ted's Bogus Journey",
+      "year": 1991,
+      "aliases": [
+        "Bill and Teds Bogus Journey"
+      ]
+    },
+    {
+      "title": "Bill & Ted Face the Music",
+      "year": 2020,
+      "aliases": [
+        "Bill and Ted Face the Music"
+      ]
+    }
+  ]
+}

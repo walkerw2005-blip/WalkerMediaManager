@@ -1,0 +1,31 @@
+{
+  "id": "planet-of-the-apes-modern",
+  "name": "Planet of the Apes — Modern Series",
+  "description": "The modern Planet of the Apes films",
+  "category": "SciFi",
+  "studio": "20th Century Studios",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Rise of the Planet of the Apes",
+      "year": 2011,
+      "aliases": []
+    },
+    {
+      "title": "Dawn of the Planet of the Apes",
+      "year": 2014,
+      "aliases": []
+    },
+    {
+      "title": "War for the Planet of the Apes",
+      "year": 2017,
+      "aliases": []
+    },
+    {
+      "title": "Kingdom of the Planet of the Apes",
+      "year": 2024,
+      "aliases": []
+    }
+  ]
+}

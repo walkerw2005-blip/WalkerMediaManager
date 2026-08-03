@@ -1,0 +1,28 @@
+{
+  "id": "wolverine",
+  "name": "Wolverine",
+  "description": "The Wolverine solo theatrical films",
+  "category": "Superhero",
+  "studio": "20th Century Studios",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "X-Men Origins: Wolverine",
+      "year": 2009,
+      "aliases": [
+        "Wolverine Origins"
+      ]
+    },
+    {
+      "title": "The Wolverine",
+      "year": 2013,
+      "aliases": []
+    },
+    {
+      "title": "Logan",
+      "year": 2017,
+      "aliases": []
+    }
+  ]
+}

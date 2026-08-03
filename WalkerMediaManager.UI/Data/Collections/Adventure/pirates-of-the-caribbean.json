@@ -1,0 +1,47 @@
+{
+  "id": "pirates-of-the-caribbean",
+  "name": "Pirates of the Caribbean",
+  "description": "The Pirates of the Caribbean theatrical films",
+  "category": "Adventure",
+  "studio": "Walt Disney Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Pirates of the Caribbean: The Curse of the Black Pearl",
+      "year": 2003,
+      "aliases": [
+        "Curse of the Black Pearl"
+      ]
+    },
+    {
+      "title": "Pirates of the Caribbean: Dead Man's Chest",
+      "year": 2006,
+      "aliases": [
+        "Dead Mans Chest"
+      ]
+    },
+    {
+      "title": "Pirates of the Caribbean: At World's End",
+      "year": 2007,
+      "aliases": [
+        "At Worlds End"
+      ]
+    },
+    {
+      "title": "Pirates of the Caribbean: On Stranger Tides",
+      "year": 2011,
+      "aliases": [
+        "On Stranger Tides"
+      ]
+    },
+    {
+      "title": "Pirates of the Caribbean: Dead Men Tell No Tales",
+      "year": 2017,
+      "aliases": [
+        "Salazars Revenge",
+        "Dead Men Tell No Tales"
+      ]
+    }
+  ]
+}

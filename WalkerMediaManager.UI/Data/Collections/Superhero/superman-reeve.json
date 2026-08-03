@@ -1,0 +1,44 @@
+{
+  "id": "superman-reeve",
+  "name": "Superman — Christopher Reeve Series",
+  "description": "The Christopher Reeve-era Superman films",
+  "category": "Superhero",
+  "studio": "Warner Bros.",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Superman",
+      "year": 1978,
+      "aliases": [
+        "Superman The Movie"
+      ]
+    },
+    {
+      "title": "Superman II",
+      "year": 1980,
+      "aliases": [
+        "Superman 2"
+      ]
+    },
+    {
+      "title": "Superman III",
+      "year": 1983,
+      "aliases": [
+        "Superman 3"
+      ]
+    },
+    {
+      "title": "Superman IV: The Quest for Peace",
+      "year": 1987,
+      "aliases": [
+        "Superman 4"
+      ]
+    },
+    {
+      "title": "Superman Returns",
+      "year": 2006,
+      "aliases": []
+    }
+  ]
+}

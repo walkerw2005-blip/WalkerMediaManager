@@ -1,0 +1,21 @@
+{
+  "id": "finding-nemo",
+  "name": "Finding Nemo",
+  "description": "Finding Nemo and Finding Dory",
+  "category": "Animation",
+  "studio": "Pixar",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Finding Nemo",
+      "year": 2003,
+      "aliases": []
+    },
+    {
+      "title": "Finding Dory",
+      "year": 2016,
+      "aliases": []
+    }
+  ]
+}

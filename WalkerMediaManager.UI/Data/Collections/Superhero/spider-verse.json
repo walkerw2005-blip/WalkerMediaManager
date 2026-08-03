@@ -1,0 +1,25 @@
+{
+  "id": "spider-verse",
+  "name": "Spider-Verse",
+  "description": "The animated Spider-Verse theatrical films",
+  "category": "Superhero",
+  "studio": "Sony Pictures Animation",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Spider-Man: Into the Spider-Verse",
+      "year": 2018,
+      "aliases": [
+        "Into the Spider-Verse"
+      ]
+    },
+    {
+      "title": "Spider-Man: Across the Spider-Verse",
+      "year": 2023,
+      "aliases": [
+        "Across the Spider-Verse"
+      ]
+    }
+  ]
+}

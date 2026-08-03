@@ -1,0 +1,32 @@
+{
+  "id": "captain-america",
+  "name": "Captain America",
+  "description": "The Captain America theatrical films through Civil War",
+  "category": "Superhero",
+  "studio": "Marvel Studios",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Captain America: The First Avenger",
+      "year": 2011,
+      "aliases": [
+        "Captain America 1"
+      ]
+    },
+    {
+      "title": "Captain America: The Winter Soldier",
+      "year": 2014,
+      "aliases": [
+        "Captain America 2"
+      ]
+    },
+    {
+      "title": "Captain America: Civil War",
+      "year": 2016,
+      "aliases": [
+        "Captain America 3"
+      ]
+    }
+  ]
+}

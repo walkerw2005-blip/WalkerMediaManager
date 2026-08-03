@@ -1,0 +1,51 @@
+{
+  "id": "ice-age",
+  "name": "Ice Age",
+  "description": "The Ice Age theatrical films",
+  "category": "Animation",
+  "studio": "Blue Sky Studios",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Ice Age",
+      "year": 2002,
+      "aliases": []
+    },
+    {
+      "title": "Ice Age: The Meltdown",
+      "year": 2006,
+      "aliases": [
+        "Ice Age 2"
+      ]
+    },
+    {
+      "title": "Ice Age: Dawn of the Dinosaurs",
+      "year": 2009,
+      "aliases": [
+        "Ice Age 3"
+      ]
+    },
+    {
+      "title": "Ice Age: Continental Drift",
+      "year": 2012,
+      "aliases": [
+        "Ice Age 4"
+      ]
+    },
+    {
+      "title": "Ice Age: Collision Course",
+      "year": 2016,
+      "aliases": [
+        "Ice Age 5"
+      ]
+    },
+    {
+      "title": "The Ice Age Adventures of Buck Wild",
+      "year": 2022,
+      "aliases": [
+        "Ice Age Adventures of Buck Wild"
+      ]
+    }
+  ]
+}

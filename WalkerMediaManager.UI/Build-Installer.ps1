@@ -18,7 +18,7 @@ $script = Join-Path $PSScriptRoot 'Installer\WalkerMediaManager.iss'
 & $iscc $script
 if ($LASTEXITCODE -ne 0) { throw 'Installer compilation failed.' }
 
-$setup = Join-Path $PSScriptRoot 'Installer\Output\WalkerMediaManager-Setup-1.0.0-RC1.exe'
+$setup = Join-Path $PSScriptRoot 'Installer\Output\WalkerMediaManager-Setup-1.0.0.exe'
 if (-not (Test-Path $setup)) { throw 'Installer compilation completed, but the setup EXE was not found.' }
 Write-Host ''
 Write-Host 'Installer created:' -ForegroundColor Green

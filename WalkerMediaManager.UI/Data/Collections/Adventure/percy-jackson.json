@@ -1,0 +1,26 @@
+{
+  "id": "percy-jackson",
+  "name": "Percy Jackson",
+  "description": "The Percy Jackson theatrical films",
+  "category": "Adventure",
+  "studio": "20th Century Studios",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Percy Jackson & the Olympians: The Lightning Thief",
+      "year": 2010,
+      "aliases": [
+        "Percy Jackson and the Olympians The Lightning Thief",
+        "The Lightning Thief"
+      ]
+    },
+    {
+      "title": "Percy Jackson: Sea of Monsters",
+      "year": 2013,
+      "aliases": [
+        "Percy Jackson Sea of Monsters"
+      ]
+    }
+  ]
+}

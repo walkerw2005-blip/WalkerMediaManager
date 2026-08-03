@@ -150,6 +150,8 @@ public sealed partial class SettingsPage : Page
         }
         catch (Exception exception)
         {
+            DiagnosticsService.LogException("SettingsPage Plex connection test failed.", exception);
+
             Libraries.Clear();
             MovieLibraries.Clear();
             TVLibraries.Clear();
@@ -220,6 +222,7 @@ public sealed partial class SettingsPage : Page
         }
         catch (Exception exception)
         {
+            DiagnosticsService.LogException("SettingsPage movie sync failed.", exception);
             ShowMovieSyncMessage(
                 $"Plex movie sync failed: {exception.Message}",
                 InfoBarSeverity.Error);
@@ -283,6 +286,7 @@ public sealed partial class SettingsPage : Page
         }
         catch (Exception exception)
         {
+            DiagnosticsService.LogException("SettingsPage slide show sync failed.", exception);
             ShowSlideshowSyncMessage(
                 $"Plex slide show sync failed: {exception.Message}",
                 InfoBarSeverity.Error);
@@ -345,6 +349,7 @@ public sealed partial class SettingsPage : Page
         }
         catch (Exception exception)
         {
+            DiagnosticsService.LogException("SettingsPage TV show sync failed.", exception);
             ShowTVSyncMessage(
                 $"Plex TV show sync failed: {exception.Message}",
                 InfoBarSeverity.Error);

@@ -12,11 +12,12 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <StackPanel Spacing="6">
-                <TextBlock Text="Shopping Mode" Style="{ThemeResource TitleTextBlockStyle}" />
-                <TextBlock Text="Scan a barcode or search by title before buying another copy." Style="{ThemeResource SubtitleTextBlockStyle}" />
+                <TextBlock Text="Purchase Checker" Style="{ThemeResource TitleTextBlockStyle}" />
+                <TextBlock Text="Search before you buy. Walker Media Manager will show whether the title is owned, on your wishlist, or not found in your collection." Style="{ThemeResource SubtitleTextBlockStyle}" TextWrapping="Wrap" />
             </StackPanel>
 
             <Border Grid.Row="1" Padding="24" CornerRadius="12"
@@ -27,7 +28,8 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="2*" />
                             <ColumnDefinition Width="1.2*" />
-                            <ColumnDefinition Width="180" />
+                            <ColumnDefinition Width="170" />
+                            <ColumnDefinition Width="170" />
                             <ColumnDefinition Width="140" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
@@ -37,14 +39,57 @@
                             <x:String>4K UHD</x:String><x:String>Blu-ray</x:String><x:String>3D Blu-ray</x:String>
                             <x:String>DVD</x:String><x:String>Digital</x:String><x:String>VHS</x:String><x:String>LaserDisc</x:String>
                         </ComboBox>
-                        <NumberBox x:Name="PriceBox" Grid.Column="3" Header="Price" Minimum="0" SpinButtonPlacementMode="Compact" />
-                        <Button Grid.Column="4" Content="Check" VerticalAlignment="Bottom" Click="CheckButton_Click" />
+                        <ComboBox x:Name="EditionBox" Grid.Column="3" Header="Edition" PlaceholderText="Standard">
+                            <x:String>Steelbook</x:String><x:String>Collector's Edition</x:String><x:String>Limited Edition</x:String>
+                            <x:String>Director's Cut</x:String><x:String>Extended Edition</x:String><x:String>Anniversary Edition</x:String>
+                        </ComboBox>
+                        <NumberBox x:Name="PriceBox" Grid.Column="4" Header="Price" Minimum="0" SpinButtonPlacementMode="Compact" />
+                        <Button Grid.Column="5" Content="Check" VerticalAlignment="Bottom" Click="CheckButton_Click" />
                     </Grid>
                     <InfoBar x:Name="StatusBar" IsOpen="False" IsClosable="True" />
                 </StackPanel>
             </Border>
 
-            <Border x:Name="ResultPanel" Grid.Row="2" Padding="24" CornerRadius="12" Visibility="Collapsed"
+            <Border x:Name="MatchesPanel" Grid.Row="2" Padding="20" CornerRadius="12" Visibility="Collapsed"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                <StackPanel Spacing="12">
+                    <TextBlock x:Name="MatchesHeading" Text="Matches" FontSize="20" FontWeight="SemiBold" />
+                    <ListView x:Name="MatchesList" SelectionMode="Single" SelectionChanged="MatchesList_SelectionChanged" MaxHeight="260">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Padding="8" ColumnSpacing="16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="180" />
+                                        <ColumnDefinition Width="140" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding MatchDisplay}" Opacity="0.70" />
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="1" Text="{Binding FormatSummary}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2" Text="{Binding OwnershipState}" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </StackPanel>
+            </Border>
+
+            <Border x:Name="NotFoundPanel" Grid.Row="3" Padding="28" CornerRadius="12" Visibility="Collapsed"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                <StackPanel Spacing="10" HorizontalAlignment="Center">
+                    <FontIcon Glyph="&#xE8FB;" FontSize="42" HorizontalAlignment="Center" />
+                    <TextBlock Text="NOT OWNED" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center" />
+                    <TextBlock x:Name="NotFoundTitleText" FontSize="20" FontWeight="SemiBold" HorizontalAlignment="Center" TextWrapping="Wrap" />
+                    <TextBlock Text="No matching movie, TV show, or wishlist item was found. Based on the records currently in Walker Media Manager, this title is safe to consider buying." TextAlignment="Center" TextWrapping="Wrap" MaxWidth="700" />
+                    <Button x:Name="AddNotFoundToWishlistButton" Content="Add to Wishlist" HorizontalAlignment="Center" Click="AddToWishlistButton_Click" />
+                </StackPanel>
+            </Border>
+
+            <Border x:Name="ResultPanel" Grid.Row="3" Padding="24" CornerRadius="12" Visibility="Collapsed"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
                 <Grid ColumnSpacing="24">
@@ -54,28 +99,35 @@
                     </Grid.ColumnDefinitions>
                     <controls:CachedArtworkImage x:Name="PosterImage" Width="180" Height="270" />
                     <StackPanel Grid.Column="1" Spacing="12">
+                        <Border HorizontalAlignment="Left" Padding="12,5" CornerRadius="12"
+                                Background="{ThemeResource AccentFillColorSecondaryBrush}">
+                            <TextBlock x:Name="OwnershipStateText" FontWeight="Bold" />
+                        </Border>
                         <TextBlock x:Name="TitleText" FontSize="28" FontWeight="SemiBold" TextWrapping="Wrap" />
                         <TextBlock x:Name="MetadataText" Opacity="0.75" />
                         <TextBlock x:Name="RecommendationText" FontSize="24" FontWeight="SemiBold" TextWrapping="Wrap" />
                         <TextBlock x:Name="RecommendationDetailText" TextWrapping="Wrap" MaxWidth="760" />
                         <TextBlock x:Name="OwnedFormatsText" TextWrapping="Wrap" />
+                        <TextBlock x:Name="OwnedEditionsText" TextWrapping="Wrap" />
                         <TextBlock x:Name="LocationsText" TextWrapping="Wrap" />
                         <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Button x:Name="OpenRecordButton" Content="Open record" Click="OpenRecordButton_Click" />
+                            <Button x:Name="WishlistActionButton" Content="Add to Wishlist" Click="WishlistActionButton_Click" Visibility="Collapsed" />
                             <Button Content="Buy" Tag="Bought" Click="DecisionButton_Click" />
                             <Button Content="Skip" Tag="Skipped" Click="DecisionButton_Click" />
                             <Button Content="Wishlist" Tag="Wishlist" Click="DecisionButton_Click" />
-                            <Button Content="Assign barcode" Click="AssignBarcodeButton_Click" />
+                            <Button x:Name="AssignBarcodeButton" Content="Assign barcode" Click="AssignBarcodeButton_Click" />
                         </StackPanel>
                     </StackPanel>
                 </Grid>
             </Border>
 
-            <Border Grid.Row="3" Padding="20" CornerRadius="12"
+            <Border Grid.Row="4" Padding="20" CornerRadius="12"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
                 <StackPanel Spacing="12">
                     <Grid>
-                        <TextBlock Text="Recent shopping activity" FontSize="20" FontWeight="SemiBold" />
+                        <TextBlock Text="Recent purchase checks" FontSize="20" FontWeight="SemiBold" />
                         <Button Content="Refresh" HorizontalAlignment="Right" Click="RefreshHistoryButton_Click" />
                     </Grid>
                     <ListView x:Name="HistoryList" SelectionMode="None">

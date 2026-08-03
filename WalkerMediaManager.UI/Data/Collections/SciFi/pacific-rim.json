@@ -1,0 +1,23 @@
+{
+  "id": "pacific-rim",
+  "name": "Pacific Rim",
+  "description": "The Pacific Rim theatrical films",
+  "category": "SciFi",
+  "studio": "Legendary Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Pacific Rim",
+      "year": 2013,
+      "aliases": []
+    },
+    {
+      "title": "Pacific Rim: Uprising",
+      "year": 2018,
+      "aliases": [
+        "Pacific Rim 2"
+      ]
+    }
+  ]
+}

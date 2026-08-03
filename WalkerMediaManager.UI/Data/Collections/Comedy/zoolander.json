@@ -1,0 +1,23 @@
+{
+  "id": "zoolander",
+  "name": "Zoolander",
+  "description": "The Zoolander theatrical films",
+  "category": "Comedy",
+  "studio": "Paramount Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Zoolander",
+      "year": 2001,
+      "aliases": []
+    },
+    {
+      "title": "Zoolander 2",
+      "year": 2016,
+      "aliases": [
+        "Zoolander No. 2"
+      ]
+    }
+  ]
+}

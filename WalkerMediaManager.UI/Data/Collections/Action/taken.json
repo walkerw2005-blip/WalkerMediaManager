@@ -1,0 +1,26 @@
+{
+  "id": "taken",
+  "name": "Taken",
+  "description": "The Taken theatrical films",
+  "category": "Action",
+  "studio": "20th Century Studios",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Taken",
+      "year": 2008,
+      "aliases": []
+    },
+    {
+      "title": "Taken 2",
+      "year": 2012,
+      "aliases": []
+    },
+    {
+      "title": "Taken 3",
+      "year": 2014,
+      "aliases": []
+    }
+  ]
+}

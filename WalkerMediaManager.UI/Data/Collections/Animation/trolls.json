@@ -1,0 +1,30 @@
+{
+  "id": "trolls",
+  "name": "Trolls",
+  "description": "The Trolls theatrical films",
+  "category": "Animation",
+  "studio": "DreamWorks Animation",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Trolls",
+      "year": 2016,
+      "aliases": []
+    },
+    {
+      "title": "Trolls World Tour",
+      "year": 2020,
+      "aliases": [
+        "Trolls 2"
+      ]
+    },
+    {
+      "title": "Trolls Band Together",
+      "year": 2023,
+      "aliases": [
+        "Trolls 3"
+      ]
+    }
+  ]
+}

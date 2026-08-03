@@ -1,0 +1,21 @@
+{
+  "id": "now-you-see-me",
+  "name": "Now You See Me",
+  "description": "The Now You See Me theatrical films",
+  "category": "Crime",
+  "studio": "Lionsgate",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Now You See Me",
+      "year": 2013,
+      "aliases": []
+    },
+    {
+      "title": "Now You See Me 2",
+      "year": 2016,
+      "aliases": []
+    }
+  ]
+}

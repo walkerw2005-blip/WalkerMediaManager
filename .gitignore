@@ -6,3 +6,4 @@ Installer/Output/
 *.user
 *.suo
 *.nupkg
+*.zip

@@ -1,0 +1,35 @@
+{
+  "id": "transporter",
+  "name": "The Transporter",
+  "description": "The Transporter theatrical films",
+  "category": "Action",
+  "studio": "EuropaCorp",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "The Transporter",
+      "year": 2002,
+      "aliases": [
+        "Transporter"
+      ]
+    },
+    {
+      "title": "Transporter 2",
+      "year": 2005,
+      "aliases": []
+    },
+    {
+      "title": "Transporter 3",
+      "year": 2008,
+      "aliases": []
+    },
+    {
+      "title": "The Transporter Refueled",
+      "year": 2015,
+      "aliases": [
+        "Transporter Refueled"
+      ]
+    }
+  ]
+}

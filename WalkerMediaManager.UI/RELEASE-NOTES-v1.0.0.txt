@@ -1,0 +1,38 @@
+Walker Media Manager 1.0.0
+==========================
+
+This is the first stable daily-use release.
+
+Included
+--------
+- Separate Movies, TV Shows, and Slide Shows libraries
+- Plex synchronization
+- Poster artwork caching
+- Search and sorting
+- Collections and wishlist
+- Smart Buy and Shopping Mode
+- Purchase history and storage locations
+- Collection intelligence and reports
+- Automatic SQLite database backup before each Plex sync
+- Retention of the newest 30 database backups
+
+Data location
+-------------
+%LOCALAPPDATA%\WalkerMediaManager
+
+Database
+--------
+%LOCALAPPDATA%\WalkerMediaManager\walker.db
+
+Backups
+-------
+%LOCALAPPDATA%\WalkerMediaManager\Backups
+
+Logs
+----
+%LOCALAPPDATA%\WalkerMediaManager\Logs
+
+Release policy
+--------------
+Version 1.0.0 is feature-frozen. Future changes will be delivered as
+separate maintenance or feature releases.

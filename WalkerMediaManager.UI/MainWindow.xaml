@@ -24,6 +24,14 @@
             </NavigationViewItem>
 
             <NavigationViewItem
+                Content="Recommendations"
+                Tag="recommendations">
+                <NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xE945;" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+
+            <NavigationViewItem
                 Content="Smart Buy"
                 Tag="smartbuy">
                 <NavigationViewItem.Icon>

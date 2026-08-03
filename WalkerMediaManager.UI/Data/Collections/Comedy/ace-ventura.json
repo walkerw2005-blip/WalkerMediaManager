@@ -1,0 +1,25 @@
+{
+  "id": "ace-ventura",
+  "name": "Ace Ventura",
+  "description": "The Ace Ventura theatrical films",
+  "category": "Comedy",
+  "studio": "Warner Bros.",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Ace Ventura: Pet Detective",
+      "year": 1994,
+      "aliases": [
+        "Ace Ventura Pet Detective"
+      ]
+    },
+    {
+      "title": "Ace Ventura: When Nature Calls",
+      "year": 1995,
+      "aliases": [
+        "Ace Ventura 2"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "daddys-home",
+  "name": "Daddy’s Home",
+  "description": "The Daddy’s Home theatrical films",
+  "category": "Comedy",
+  "studio": "Paramount Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Daddy's Home",
+      "year": 2015,
+      "aliases": [
+        "Daddys Home"
+      ]
+    },
+    {
+      "title": "Daddy's Home 2",
+      "year": 2017,
+      "aliases": [
+        "Daddys Home 2"
+      ]
+    }
+  ]
+}

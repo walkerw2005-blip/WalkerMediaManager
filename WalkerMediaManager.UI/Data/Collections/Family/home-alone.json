@@ -1,0 +1,33 @@
+{
+  "id": "home-alone",
+  "name": "Home Alone",
+  "description": "The principal Home Alone theatrical films",
+  "category": "Family",
+  "studio": "20th Century Studios",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Home Alone",
+      "year": 1990,
+      "aliases": []
+    },
+    {
+      "title": "Home Alone 2: Lost in New York",
+      "year": 1992,
+      "aliases": [
+        "Home Alone 2"
+      ]
+    },
+    {
+      "title": "Home Alone 3",
+      "year": 1997,
+      "aliases": []
+    },
+    {
+      "title": "Home Sweet Home Alone",
+      "year": 2021,
+      "aliases": []
+    }
+  ]
+}

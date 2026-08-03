@@ -21,6 +21,8 @@ public sealed partial class SlideshowsPage : Page
     private readonly MovieSpreadsheetImportService _spreadsheetImportService = new();
     private readonly List<Movie> _allMovies = [];
     private Movie? _movieBeingEdited;
+    private string _duplicateOverrideKey = string.Empty;
+    private bool _isLoading;
 
     public ObservableCollection<Movie> DisplayMovies { get; } = [];
 
@@ -32,6 +34,9 @@ public sealed partial class SlideshowsPage : Page
 
     private async void SlideshowsPage_Loaded(object sender, RoutedEventArgs e)
     {
+        if (_isLoading) return;
+        _isLoading = true;
+
         RestorePreferences();
 
         try
@@ -46,6 +51,10 @@ public sealed partial class SlideshowsPage : Page
             ShowStatus(
                 $"The slide show list could not be loaded: {exception.Message}. A diagnostic log was written to {DiagnosticsService.LogFilePath}",
                 InfoBarSeverity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
         }
     }
 
@@ -64,13 +73,32 @@ public sealed partial class SlideshowsPage : Page
 
         if (!string.IsNullOrWhiteSpace(query))
         {
-            movies = movies.Where(movie =>
-                Contains(movie.Title, query) ||
-                Contains(movie.Genre, query) ||
-                Contains(movie.Director, query) ||
-                Contains(movie.Studio, query) ||
-                movie.ReleaseYear.ToString().Contains(query, StringComparison.OrdinalIgnoreCase));
+            movies = movies.Where(movie => MediaSearchService.Matches(
+                query,
+                movie.Title,
+                movie.SortTitle,
+                movie.ReleaseYear,
+                movie.Rating,
+                movie.Genre,
+                movie.Director,
+                movie.Studio,
+                movie.Summary,
+                movie.Format,
+                movie.PlexLibraryTitle,
+                movie.IMDbId,
+                movie.TMDbId));
         }
+
+        string filter = (FilterComboBox?.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "All";
+        movies = filter switch
+        {
+            "Owned" => movies.Where(movie => movie.Owned),
+            "NotOwned" => movies.Where(movie => !movie.Owned),
+            "MissingArtwork" => movies.Where(movie => string.IsNullOrWhiteSpace(movie.PosterPath)),
+            "PlexLinked" => movies.Where(movie => !string.IsNullOrWhiteSpace(movie.PlexRatingKey) || !string.IsNullOrWhiteSpace(movie.PlexGuid)),
+            "NotPlexLinked" => movies.Where(movie => string.IsNullOrWhiteSpace(movie.PlexRatingKey) && string.IsNullOrWhiteSpace(movie.PlexGuid)),
+            _ => movies
+        };
 
         string sort = (SortComboBox.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "TitleAscending";
         movies = sort switch
@@ -100,12 +128,17 @@ public sealed partial class SlideshowsPage : Page
     private static DateTimeOffset ParseDate(string value) =>
         DateTimeOffset.TryParse(value, out DateTimeOffset date) ? date : DateTimeOffset.MinValue;
 
-    private static bool Contains(string value, string query) =>
-        value?.Contains(query, StringComparison.OrdinalIgnoreCase) == true;
-
     private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
     {
         if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+        {
+            ApplyFilterAndSort();
+        }
+    }
+
+    private void FilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (IsLoaded)
         {
             ApplyFilterAndSort();
         }
@@ -236,6 +269,39 @@ public sealed partial class SlideshowsPage : Page
 
             int.TryParse(YearBox.Text.Trim(), out int year);
 
+            Movie? possibleDuplicate =
+                MediaDuplicateService.FindPossibleDuplicate(
+                    _allMovies,
+                    title,
+                    year,
+                    _movieBeingEdited?.Id);
+
+            string duplicateKey =
+                MediaDuplicateService.CreateKey(title, year);
+
+            if (possibleDuplicate is not null &&
+                !string.Equals(
+                    _duplicateOverrideKey,
+                    duplicateKey,
+                    StringComparison.Ordinal))
+            {
+                _duplicateOverrideKey = duplicateKey;
+                args.Cancel = true;
+
+                string existingYear =
+                    possibleDuplicate.ReleaseYear > 0
+                        ? $" ({possibleDuplicate.ReleaseYear})"
+                        : string.Empty;
+
+                ShowStatus(
+                    $"Possible duplicate: {possibleDuplicate.Title}{existingYear} already exists. " +
+                    "Select Save again to add it anyway.",
+                    InfoBarSeverity.Warning);
+                return;
+            }
+
+            _duplicateOverrideKey = string.Empty;
+
             Movie movie = _movieBeingEdited ?? new Movie { Owned = true, PlexLibraryTitle = "Slide Shows" };
             movie.Title = title;
             movie.ReleaseYear = year;
@@ -329,6 +395,7 @@ public sealed partial class SlideshowsPage : Page
     private void ResetEditor()
     {
         _movieBeingEdited = null;
+        _duplicateOverrideKey = string.Empty;
         MovieEditorDialog.Title = "Add Movie";
         TitleBox.Text = string.Empty;
         YearBox.Text = string.Empty;

@@ -7,14 +7,17 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WalkerMediaManager.UI.Models;
 using WalkerMediaManager.UI.Repositories;
+using WalkerMediaManager.UI.Services;
 
 namespace WalkerMediaManager.UI.Views;
 
 public sealed partial class TvShowsPage : Page
 {
     private readonly TVShowRepository _tvShowRepository = new();
+    private readonly TVMetadataService _tvMetadataService = new();
     private readonly List<TVShow> _allShows = [];
     private TVShow? _showBeingEdited;
+    private bool _isLoading;
 
     public ObservableCollection<TVShow> DisplayShows { get; } = [];
 
@@ -26,7 +29,26 @@ public sealed partial class TvShowsPage : Page
 
     private async void TvShowsPage_Loaded(object sender, RoutedEventArgs e)
     {
-        await RefreshShowsAsync();
+        if (_isLoading) return;
+        _isLoading = true;
+
+        try
+        {
+            await RefreshShowsAsync();
+        }
+        catch (Exception exception)
+        {
+            DiagnosticsService.LogException("TvShowsPage failed to load the TV-show list.", exception);
+            ShowCountText.Text = "TV-show load failed";
+            VisibleCountText.Text = "0 shown";
+            ShowStatus(
+                $"The TV-show list could not be loaded: {exception.Message}. A diagnostic log was written to {DiagnosticsService.LogFilePath}",
+                InfoBarSeverity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
     }
 
     private async Task RefreshShowsAsync()
@@ -47,12 +69,29 @@ public sealed partial class TvShowsPage : Page
 
         if (!string.IsNullOrWhiteSpace(query))
         {
-            filtered = filtered.Where(show =>
-                Contains(show.Title, query) ||
-                Contains(show.YearDisplay, query) ||
-                Contains(show.Studio, query) ||
-                Contains(show.Summary, query));
+            filtered = filtered.Where(show => MediaSearchService.Matches(
+                query,
+                show.Title,
+                show.Year,
+                show.Seasons,
+                show.Episodes,
+                show.Studio,
+                show.Summary,
+                show.IMDbId,
+                show.TMDbId,
+                show.PlexStatus));
         }
+
+        string filter = (FilterComboBox?.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "All";
+        filtered = filter switch
+        {
+            "Owned" => filtered.Where(show => show.Owned),
+            "NotOwned" => filtered.Where(show => !show.Owned),
+            "MissingArtwork" => filtered.Where(show => string.IsNullOrWhiteSpace(show.PosterPath)),
+            "PlexLinked" => filtered.Where(show => !string.IsNullOrWhiteSpace(show.PlexRatingKey) || !string.IsNullOrWhiteSpace(show.PlexGuid)),
+            "NotPlexLinked" => filtered.Where(show => string.IsNullOrWhiteSpace(show.PlexRatingKey) && string.IsNullOrWhiteSpace(show.PlexGuid)),
+            _ => filtered
+        };
 
         string sort = (SortComboBox?.SelectedItem as ComboBoxItem)?.Tag?.ToString()
             ?? "TitleAscending";
@@ -80,10 +119,6 @@ public sealed partial class TvShowsPage : Page
         }
     }
 
-    private static bool Contains(string? value, string query) =>
-        !string.IsNullOrWhiteSpace(value) &&
-        value.Contains(query, StringComparison.OrdinalIgnoreCase);
-
     private static DateTimeOffset ParseDate(string value) =>
         DateTimeOffset.TryParse(value, out DateTimeOffset parsed)
             ? parsed
@@ -92,6 +127,14 @@ public sealed partial class TvShowsPage : Page
     private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
     {
         if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+        {
+            ApplySearchAndSort();
+        }
+    }
+
+    private void FilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (IsLoaded)
         {
             ApplySearchAndSort();
         }
@@ -111,6 +154,48 @@ public sealed partial class TvShowsPage : Page
         ShowGridView.Visibility = showGrid ? Visibility.Visible : Visibility.Collapsed;
         ShowListView.Visibility = showGrid ? Visibility.Collapsed : Visibility.Visible;
         GridViewToggle.Content = showGrid ? "Grid" : "List";
+    }
+
+
+    private async void RefreshMetadataButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_isLoading)
+        {
+            return;
+        }
+
+        _isLoading = true;
+        RefreshMetadataButton.IsEnabled = false;
+        MetadataProgressRing.IsActive = true;
+        MetadataProgressRing.Visibility = Visibility.Visible;
+
+        Progress<string> progress = new(message =>
+        {
+            StatusInfoBar.Title = "Refreshing TV metadata";
+            StatusInfoBar.Message = message;
+            StatusInfoBar.Severity = InfoBarSeverity.Informational;
+            StatusInfoBar.IsOpen = true;
+        });
+
+        try
+        {
+            TVMetadataSyncResult result = await _tvMetadataService.RefreshAllAsync(progress);
+            await RefreshShowsAsync();
+            ShowStatus($"TV metadata refresh finished. {result.Summary}",
+                result.FailedCount == 0 ? InfoBarSeverity.Success : InfoBarSeverity.Warning);
+        }
+        catch (Exception exception)
+        {
+            DiagnosticsService.LogException("TV metadata refresh failed.", exception);
+            ShowStatus($"TV metadata could not be refreshed: {exception.Message}", InfoBarSeverity.Error);
+        }
+        finally
+        {
+            MetadataProgressRing.IsActive = false;
+            MetadataProgressRing.Visibility = Visibility.Collapsed;
+            RefreshMetadataButton.IsEnabled = true;
+            _isLoading = false;
+        }
     }
 
     private async void ShowEditorButton_Click(object sender, RoutedEventArgs e)

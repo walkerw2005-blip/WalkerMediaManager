@@ -1,0 +1,37 @@
+{
+  "id": "jumanji",
+  "name": "Jumanji",
+  "description": "The Jumanji theatrical films",
+  "category": "Adventure",
+  "studio": "Sony Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Jumanji",
+      "year": 1995,
+      "aliases": []
+    },
+    {
+      "title": "Zathura: A Space Adventure",
+      "year": 2005,
+      "aliases": [
+        "Zathura"
+      ]
+    },
+    {
+      "title": "Jumanji: Welcome to the Jungle",
+      "year": 2017,
+      "aliases": [
+        "Jumanji Welcome to the Jungle"
+      ]
+    },
+    {
+      "title": "Jumanji: The Next Level",
+      "year": 2019,
+      "aliases": [
+        "Jumanji The Next Level"
+      ]
+    }
+  ]
+}

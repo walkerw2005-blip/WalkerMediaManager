@@ -1,0 +1,31 @@
+{
+  "id": "lethal-weapon",
+  "name": "Lethal Weapon",
+  "description": "The Lethal Weapon theatrical films",
+  "category": "Action",
+  "studio": "Warner Bros.",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Lethal Weapon",
+      "year": 1987,
+      "aliases": []
+    },
+    {
+      "title": "Lethal Weapon 2",
+      "year": 1989,
+      "aliases": []
+    },
+    {
+      "title": "Lethal Weapon 3",
+      "year": 1992,
+      "aliases": []
+    },
+    {
+      "title": "Lethal Weapon 4",
+      "year": 1998,
+      "aliases": []
+    }
+  ]
+}

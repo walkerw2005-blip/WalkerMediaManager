@@ -1,0 +1,31 @@
+{
+  "id": "kung-fu-panda",
+  "name": "Kung Fu Panda",
+  "description": "The Kung Fu Panda theatrical films",
+  "category": "Animation",
+  "studio": "DreamWorks Animation",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Kung Fu Panda",
+      "year": 2008,
+      "aliases": []
+    },
+    {
+      "title": "Kung Fu Panda 2",
+      "year": 2011,
+      "aliases": []
+    },
+    {
+      "title": "Kung Fu Panda 3",
+      "year": 2016,
+      "aliases": []
+    },
+    {
+      "title": "Kung Fu Panda 4",
+      "year": 2024,
+      "aliases": []
+    }
+  ]
+}

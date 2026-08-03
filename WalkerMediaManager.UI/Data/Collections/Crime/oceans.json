@@ -1,0 +1,39 @@
+{
+  "id": "oceans",
+  "name": "Ocean’s",
+  "description": "The modern Ocean’s theatrical films",
+  "category": "Crime",
+  "studio": "Warner Bros.",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Ocean's Eleven",
+      "year": 2001,
+      "aliases": [
+        "Oceans Eleven"
+      ]
+    },
+    {
+      "title": "Ocean's Twelve",
+      "year": 2004,
+      "aliases": [
+        "Oceans Twelve"
+      ]
+    },
+    {
+      "title": "Ocean's Thirteen",
+      "year": 2007,
+      "aliases": [
+        "Oceans Thirteen"
+      ]
+    },
+    {
+      "title": "Ocean's 8",
+      "year": 2018,
+      "aliases": [
+        "Oceans 8"
+      ]
+    }
+  ]
+}

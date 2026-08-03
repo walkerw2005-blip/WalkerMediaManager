@@ -1,0 +1,33 @@
+{
+  "id": "batman-burton-schumacher",
+  "name": "Batman — Burton/Schumacher",
+  "description": "The Batman films from 1989 through 1997",
+  "category": "Superhero",
+  "studio": "Warner Bros.",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Batman",
+      "year": 1989,
+      "aliases": []
+    },
+    {
+      "title": "Batman Returns",
+      "year": 1992,
+      "aliases": []
+    },
+    {
+      "title": "Batman Forever",
+      "year": 1995,
+      "aliases": []
+    },
+    {
+      "title": "Batman & Robin",
+      "year": 1997,
+      "aliases": [
+        "Batman and Robin"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "id": "john-wick",
+  "name": "John Wick",
+  "description": "The John Wick theatrical films",
+  "category": "Action",
+  "studio": "Lionsgate",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "John Wick",
+      "year": 2014,
+      "aliases": []
+    },
+    {
+      "title": "John Wick: Chapter 2",
+      "year": 2017,
+      "aliases": [
+        "John Wick 2"
+      ]
+    },
+    {
+      "title": "John Wick: Chapter 3 - Parabellum",
+      "year": 2019,
+      "aliases": [
+        "John Wick 3",
+        "John Wick Chapter 3 Parabellum"
+      ]
+    },
+    {
+      "title": "John Wick: Chapter 4",
+      "year": 2023,
+      "aliases": [
+        "John Wick 4"
+      ]
+    }
+  ]
+}

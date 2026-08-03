@@ -1,0 +1,90 @@
+{
+  "id": "halloween",
+  "name": "Halloween",
+  "description": "The core Halloween theatrical films",
+  "category": "Horror",
+  "studio": "Universal Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Halloween",
+      "year": 1978,
+      "aliases": []
+    },
+    {
+      "title": "Halloween II",
+      "year": 1981,
+      "aliases": [
+        "Halloween 2"
+      ]
+    },
+    {
+      "title": "Halloween III: Season of the Witch",
+      "year": 1982,
+      "aliases": [
+        "Halloween 3"
+      ]
+    },
+    {
+      "title": "Halloween 4: The Return of Michael Myers",
+      "year": 1988,
+      "aliases": []
+    },
+    {
+      "title": "Halloween 5: The Revenge of Michael Myers",
+      "year": 1989,
+      "aliases": []
+    },
+    {
+      "title": "Halloween: The Curse of Michael Myers",
+      "year": 1995,
+      "aliases": [
+        "Halloween 6"
+      ]
+    },
+    {
+      "title": "Halloween H20: 20 Years Later",
+      "year": 1998,
+      "aliases": [
+        "Halloween H20"
+      ]
+    },
+    {
+      "title": "Halloween: Resurrection",
+      "year": 2002,
+      "aliases": []
+    },
+    {
+      "title": "Halloween",
+      "year": 2007,
+      "aliases": [
+        "Rob Zombie Halloween"
+      ]
+    },
+    {
+      "title": "Halloween II",
+      "year": 2009,
+      "aliases": [
+        "Rob Zombie Halloween 2"
+      ]
+    },
+    {
+      "title": "Halloween",
+      "year": 2018,
+      "aliases": [
+        "Halloween 2018"
+      ]
+    },
+    {
+      "title": "Halloween Kills",
+      "year": 2021,
+      "aliases": []
+    },
+    {
+      "title": "Halloween Ends",
+      "year": 2022,
+      "aliases": []
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "boss-baby",
+  "name": "The Boss Baby",
+  "description": "The Boss Baby theatrical films",
+  "category": "Animation",
+  "studio": "DreamWorks Animation",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "The Boss Baby",
+      "year": 2017,
+      "aliases": [
+        "Boss Baby"
+      ]
+    },
+    {
+      "title": "The Boss Baby: Family Business",
+      "year": 2021,
+      "aliases": [
+        "The Boss Baby 2",
+        "Boss Baby Family Business"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "id": "ant-man",
+  "name": "Ant-Man",
+  "description": "The Ant-Man theatrical films",
+  "category": "Superhero",
+  "studio": "Marvel Studios",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Ant-Man",
+      "year": 2015,
+      "aliases": [
+        "Ant Man"
+      ]
+    },
+    {
+      "title": "Ant-Man and the Wasp",
+      "year": 2018,
+      "aliases": [
+        "Ant Man and the Wasp"
+      ]
+    },
+    {
+      "title": "Ant-Man and the Wasp: Quantumania",
+      "year": 2023,
+      "aliases": [
+        "Ant Man Quantumania"
+      ]
+    }
+  ]
+}

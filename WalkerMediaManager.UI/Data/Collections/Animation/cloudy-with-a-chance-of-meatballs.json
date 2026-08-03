@@ -1,0 +1,21 @@
+{
+  "id": "cloudy-with-a-chance-of-meatballs",
+  "name": "Cloudy with a Chance of Meatballs",
+  "description": "The Cloudy with a Chance of Meatballs films",
+  "category": "Animation",
+  "studio": "Sony Pictures Animation",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Cloudy with a Chance of Meatballs",
+      "year": 2009,
+      "aliases": []
+    },
+    {
+      "title": "Cloudy with a Chance of Meatballs 2",
+      "year": 2013,
+      "aliases": []
+    }
+  ]
+}

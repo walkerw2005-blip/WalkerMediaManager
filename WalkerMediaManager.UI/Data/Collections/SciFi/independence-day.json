@@ -1,0 +1,23 @@
+{
+  "id": "independence-day",
+  "name": "Independence Day",
+  "description": "The Independence Day theatrical films",
+  "category": "SciFi",
+  "studio": "20th Century Studios",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Independence Day",
+      "year": 1996,
+      "aliases": []
+    },
+    {
+      "title": "Independence Day: Resurgence",
+      "year": 2016,
+      "aliases": [
+        "Independence Day 2"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "id": "legally-blonde",
+  "name": "Legally Blonde",
+  "description": "The Legally Blonde theatrical films",
+  "category": "Comedy",
+  "studio": "MGM",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Legally Blonde",
+      "year": 2001,
+      "aliases": []
+    },
+    {
+      "title": "Legally Blonde 2: Red, White & Blonde",
+      "year": 2003,
+      "aliases": [
+        "Legally Blonde 2"
+      ]
+    }
+  ]
+}

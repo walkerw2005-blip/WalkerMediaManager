@@ -4,7 +4,7 @@ $project = Join-Path $PSScriptRoot 'WalkerMediaManager.UI.csproj'
 $publishDir = Join-Path $PSScriptRoot 'artifacts\publish\win-x64'
 $exe = Join-Path $publishDir 'WalkerMediaManager.exe'
 
-Write-Host 'Building Walker Media Manager RC1e portable folder...' -ForegroundColor Cyan
+Write-Host 'Building Walker Media Manager 1.0.0 portable folder...' -ForegroundColor Cyan
 
 if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
     throw 'The .NET SDK was not found. Install the .NET 8 SDK or the Visual Studio .NET desktop development workload.'

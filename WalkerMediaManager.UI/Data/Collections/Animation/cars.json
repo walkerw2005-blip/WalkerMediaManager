@@ -1,0 +1,26 @@
+{
+  "id": "cars",
+  "name": "Cars",
+  "description": "The Cars theatrical films",
+  "category": "Animation",
+  "studio": "Pixar",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Cars",
+      "year": 2006,
+      "aliases": []
+    },
+    {
+      "title": "Cars 2",
+      "year": 2011,
+      "aliases": []
+    },
+    {
+      "title": "Cars 3",
+      "year": 2017,
+      "aliases": []
+    }
+  ]
+}

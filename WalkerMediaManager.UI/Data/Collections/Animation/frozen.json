@@ -1,0 +1,23 @@
+{
+  "id": "frozen",
+  "name": "Frozen",
+  "description": "The Frozen theatrical films",
+  "category": "Animation",
+  "studio": "Walt Disney Animation Studios",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Frozen",
+      "year": 2013,
+      "aliases": []
+    },
+    {
+      "title": "Frozen II",
+      "year": 2019,
+      "aliases": [
+        "Frozen 2"
+      ]
+    }
+  ]
+}

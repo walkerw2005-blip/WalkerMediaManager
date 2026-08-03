@@ -1,0 +1,21 @@
+{
+  "id": "amazing-spider-man",
+  "name": "The Amazing Spider-Man",
+  "description": "The Amazing Spider-Man theatrical films",
+  "category": "Superhero",
+  "studio": "Sony Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "The Amazing Spider-Man",
+      "year": 2012,
+      "aliases": []
+    },
+    {
+      "title": "The Amazing Spider-Man 2",
+      "year": 2014,
+      "aliases": []
+    }
+  ]
+}

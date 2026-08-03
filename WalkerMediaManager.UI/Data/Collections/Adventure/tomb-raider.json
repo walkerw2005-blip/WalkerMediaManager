@@ -1,0 +1,30 @@
+{
+  "id": "tomb-raider",
+  "name": "Tomb Raider",
+  "description": "The Tomb Raider theatrical films",
+  "category": "Adventure",
+  "studio": "Paramount Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Lara Croft: Tomb Raider",
+      "year": 2001,
+      "aliases": [
+        "Tomb Raider 2001"
+      ]
+    },
+    {
+      "title": "Lara Croft: Tomb Raider - The Cradle of Life",
+      "year": 2003,
+      "aliases": [
+        "Tomb Raider The Cradle of Life"
+      ]
+    },
+    {
+      "title": "Tomb Raider",
+      "year": 2018,
+      "aliases": []
+    }
+  ]
+}

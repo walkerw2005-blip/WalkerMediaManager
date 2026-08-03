@@ -1,0 +1,25 @@
+{
+  "id": "wayne-world",
+  "name": "Wayne’s World",
+  "description": "The Wayne’s World theatrical films",
+  "category": "Comedy",
+  "studio": "Paramount Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Wayne's World",
+      "year": 1992,
+      "aliases": [
+        "Waynes World"
+      ]
+    },
+    {
+      "title": "Wayne's World 2",
+      "year": 1993,
+      "aliases": [
+        "Waynes World 2"
+      ]
+    }
+  ]
+}

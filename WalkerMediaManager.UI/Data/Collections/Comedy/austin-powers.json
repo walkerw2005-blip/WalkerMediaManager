@@ -1,0 +1,32 @@
+{
+  "id": "austin-powers",
+  "name": "Austin Powers",
+  "description": "The Austin Powers theatrical films",
+  "category": "Comedy",
+  "studio": "New Line Cinema",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Austin Powers: International Man of Mystery",
+      "year": 1997,
+      "aliases": [
+        "Austin Powers 1"
+      ]
+    },
+    {
+      "title": "Austin Powers: The Spy Who Shagged Me",
+      "year": 1999,
+      "aliases": [
+        "Austin Powers 2"
+      ]
+    },
+    {
+      "title": "Austin Powers in Goldmember",
+      "year": 2002,
+      "aliases": [
+        "Austin Powers 3"
+      ]
+    }
+  ]
+}

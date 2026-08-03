@@ -1,0 +1,21 @@
+{
+  "id": "grown-ups",
+  "name": "Grown Ups",
+  "description": "The Grown Ups theatrical films",
+  "category": "Comedy",
+  "studio": "Sony Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Grown Ups",
+      "year": 2010,
+      "aliases": []
+    },
+    {
+      "title": "Grown Ups 2",
+      "year": 2013,
+      "aliases": []
+    }
+  ]
+}

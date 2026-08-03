@@ -1,0 +1,23 @@
+{
+  "id": "peter-rabbit",
+  "name": "Peter Rabbit",
+  "description": "The Peter Rabbit theatrical films",
+  "category": "Family",
+  "studio": "Sony Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Peter Rabbit",
+      "year": 2018,
+      "aliases": []
+    },
+    {
+      "title": "Peter Rabbit 2: The Runaway",
+      "year": 2021,
+      "aliases": [
+        "Peter Rabbit 2"
+      ]
+    }
+  ]
+}

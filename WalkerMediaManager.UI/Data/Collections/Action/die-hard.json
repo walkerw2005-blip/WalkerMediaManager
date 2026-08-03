@@ -1,0 +1,44 @@
+{
+  "id": "die-hard",
+  "name": "Die Hard",
+  "description": "The Die Hard theatrical films",
+  "category": "Action",
+  "studio": "20th Century Studios",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Die Hard",
+      "year": 1988,
+      "aliases": []
+    },
+    {
+      "title": "Die Hard 2",
+      "year": 1990,
+      "aliases": [
+        "Die Hard 2 Die Harder"
+      ]
+    },
+    {
+      "title": "Die Hard with a Vengeance",
+      "year": 1995,
+      "aliases": [
+        "Die Hard 3"
+      ]
+    },
+    {
+      "title": "Live Free or Die Hard",
+      "year": 2007,
+      "aliases": [
+        "Die Hard 4.0"
+      ]
+    },
+    {
+      "title": "A Good Day to Die Hard",
+      "year": 2013,
+      "aliases": [
+        "Die Hard 5"
+      ]
+    }
+  ]
+}

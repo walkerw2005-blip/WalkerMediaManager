@@ -1,0 +1,56 @@
+{
+  "id": "transformers",
+  "name": "Transformers",
+  "description": "The live-action Transformers theatrical films",
+  "category": "SciFi",
+  "studio": "Paramount Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Transformers",
+      "year": 2007,
+      "aliases": []
+    },
+    {
+      "title": "Transformers: Revenge of the Fallen",
+      "year": 2009,
+      "aliases": [
+        "Transformers 2"
+      ]
+    },
+    {
+      "title": "Transformers: Dark of the Moon",
+      "year": 2011,
+      "aliases": [
+        "Transformers 3"
+      ]
+    },
+    {
+      "title": "Transformers: Age of Extinction",
+      "year": 2014,
+      "aliases": [
+        "Transformers 4"
+      ]
+    },
+    {
+      "title": "Transformers: The Last Knight",
+      "year": 2017,
+      "aliases": [
+        "Transformers 5"
+      ]
+    },
+    {
+      "title": "Bumblebee",
+      "year": 2018,
+      "aliases": []
+    },
+    {
+      "title": "Transformers: Rise of the Beasts",
+      "year": 2023,
+      "aliases": [
+        "Transformers 7"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "id": "nanny-mcphee",
+  "name": "Nanny McPhee",
+  "description": "The Nanny McPhee theatrical films",
+  "category": "Family",
+  "studio": "Universal Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Nanny McPhee",
+      "year": 2005,
+      "aliases": []
+    },
+    {
+      "title": "Nanny McPhee Returns",
+      "year": 2010,
+      "aliases": [
+        "Nanny McPhee and the Big Bang"
+      ]
+    }
+  ]
+}

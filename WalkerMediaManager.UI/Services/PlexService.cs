@@ -142,7 +142,7 @@ public sealed class PlexService
             }
         }
 
-        return movies
+        List<PlexMovie> distinctMovies = movies
             .GroupBy(
                 movie => string.IsNullOrWhiteSpace(movie.PlexGuid)
                     ? $"{movie.Title}|{movie.ReleaseYear}|{movie.PlexKey}"
@@ -152,6 +152,23 @@ public sealed class PlexService
             .OrderBy(movie => movie.Title)
             .ThenBy(movie => movie.ReleaseYear)
             .ToList();
+
+        // Some Plex library responses omit thumb/art attributes even though the
+        // movie's full metadata record contains them. Refresh only those movies
+        // so a normal sync can restore missing artwork without slowing every item.
+        foreach (PlexMovie movie in distinctMovies.Where(movie =>
+                     string.IsNullOrWhiteSpace(movie.ThumbPath) ||
+                     string.IsNullOrWhiteSpace(movie.BackgroundPath)))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await EnrichMovieArtworkAsync(
+                serverUrl,
+                token,
+                movie,
+                cancellationToken);
+        }
+
+        return distinctMovies;
     }
 
     public async Task<IReadOnlyList<PlexTVShow>> GetTVShowsAsync(
@@ -210,6 +227,87 @@ public sealed class PlexService
             .OrderBy(show => show.Title)
             .ThenBy(show => show.Year)
             .ToList();
+    }
+
+
+    private async Task EnrichMovieArtworkAsync(
+        string serverUrl,
+        string token,
+        PlexMovie movie,
+        CancellationToken cancellationToken)
+    {
+        string ratingKey = NormalizeRatingKey(movie.PlexKey);
+        if (string.IsNullOrWhiteSpace(ratingKey))
+        {
+            return;
+        }
+
+        try
+        {
+            using HttpRequestMessage request = CreateRequest(
+                serverUrl,
+                $"/library/metadata/{Uri.EscapeDataString(ratingKey)}",
+                token);
+
+            using HttpResponseMessage response = await _httpClient.SendAsync(
+                request,
+                HttpCompletionOption.ResponseHeadersRead,
+                cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return;
+            }
+
+            string xml = await response.Content.ReadAsStringAsync(cancellationToken);
+            XElement? video = XDocument.Parse(xml)
+                .Descendants("Video")
+                .FirstOrDefault();
+
+            if (video is null)
+            {
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(movie.ThumbPath))
+            {
+                movie.ThumbPath = video.Attribute("thumb")?.Value ?? string.Empty;
+            }
+
+            if (string.IsNullOrWhiteSpace(movie.BackgroundPath))
+            {
+                movie.BackgroundPath = video.Attribute("art")?.Value ?? string.Empty;
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch
+        {
+            // Artwork enrichment is best-effort. The rest of the movie sync
+            // should still complete when one Plex metadata record cannot load.
+        }
+    }
+
+    private static string NormalizeRatingKey(string plexKey)
+    {
+        string value = plexKey?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        const string metadataPrefix = "/library/metadata/";
+        if (value.StartsWith(metadataPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            value = value[metadataPrefix.Length..];
+        }
+
+        int separatorIndex = value.IndexOfAny(['/', '?']);
+        return separatorIndex >= 0
+            ? value[..separatorIndex]
+            : value;
     }
 
     private async Task<XDocument> GetLibraryPageAsync(

@@ -1,0 +1,45 @@
+{
+  "id": "scream",
+  "name": "Scream",
+  "description": "The Scream theatrical films",
+  "category": "Horror",
+  "studio": "Paramount Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Scream",
+      "year": 1996,
+      "aliases": []
+    },
+    {
+      "title": "Scream 2",
+      "year": 1997,
+      "aliases": []
+    },
+    {
+      "title": "Scream 3",
+      "year": 2000,
+      "aliases": []
+    },
+    {
+      "title": "Scream 4",
+      "year": 2011,
+      "aliases": []
+    },
+    {
+      "title": "Scream",
+      "year": 2022,
+      "aliases": [
+        "Scream 5"
+      ]
+    },
+    {
+      "title": "Scream VI",
+      "year": 2023,
+      "aliases": [
+        "Scream 6"
+      ]
+    }
+  ]
+}

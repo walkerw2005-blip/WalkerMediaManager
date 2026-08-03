@@ -1,0 +1,26 @@
+{
+  "id": "meet-the-parents",
+  "name": "Meet the Parents",
+  "description": "The Meet the Parents theatrical films",
+  "category": "Comedy",
+  "studio": "Universal Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Meet the Parents",
+      "year": 2000,
+      "aliases": []
+    },
+    {
+      "title": "Meet the Fockers",
+      "year": 2004,
+      "aliases": []
+    },
+    {
+      "title": "Little Fockers",
+      "year": 2010,
+      "aliases": []
+    }
+  ]
+}

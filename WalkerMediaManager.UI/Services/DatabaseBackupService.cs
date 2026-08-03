@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Data.Sqlite;
 using WalkerMediaManager.UI.Data;
 
 namespace WalkerMediaManager.UI.Services;
@@ -11,77 +12,108 @@ namespace WalkerMediaManager.UI.Services;
 public static class DatabaseBackupService
 {
     private const int MaximumBackupCount = 30;
-    private const string BackupFolderName = "Backups";
 
-    public static string BackupFolderPath
-    {
-        get
-        {
-            string databaseFolder =
-                Path.GetDirectoryName(DatabaseService.DatabasePath)
-                ?? throw new InvalidOperationException(
-                    "The database folder could not be determined.");
+    public static string BackupFolderPath => ApplicationPaths.BackupFolder;
 
-            return Path.Combine(databaseFolder, BackupFolderName);
-        }
-    }
-
-    public static async Task<string?> CreateBackupAsync(
+    public static async Task<string?> CreateDailyBackupAsync(
         CancellationToken cancellationToken = default)
     {
-        string databasePath = DatabaseService.DatabasePath;
-
-        if (!File.Exists(databasePath))
-        {
-            DiagnosticsService.Log(
-                $"Database backup skipped because the database does not exist: {databasePath}");
-
-            return null;
-        }
+        cancellationToken.ThrowIfCancellationRequested();
 
         Directory.CreateDirectory(BackupFolderPath);
 
-        string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HHmmss");
-        string backupPath = Path.Combine(
-            BackupFolderPath,
-            $"walker_{timestamp}.db");
+        string datePrefix = $"walker_{DateTime.Now:yyyy-MM-dd}_";
+        string? existingBackup = new DirectoryInfo(BackupFolderPath)
+            .EnumerateFiles($"{datePrefix}*.db", SearchOption.TopDirectoryOnly)
+            .OrderByDescending(file => file.LastWriteTimeUtc)
+            .Select(file => file.FullName)
+            .FirstOrDefault();
 
+        if (!string.IsNullOrWhiteSpace(existingBackup))
+        {
+            DiagnosticsService.Log(
+                $"Daily startup backup already exists: {existingBackup}");
+            DeleteOldBackups();
+            return existingBackup;
+        }
+
+        DiagnosticsService.Log("Creating daily startup database backup.");
+        return await CreateBackupAsync(cancellationToken);
+    }
+
+    public static async Task<string> CreateBackupAsync(
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        string databasePath = Path.GetFullPath(DatabaseService.DatabasePath);
+        string backupFolderPath = Path.GetFullPath(BackupFolderPath);
+
+        ApplicationPaths.EnsureDataFolderExists();
+        Directory.CreateDirectory(backupFolderPath);
+
+        if (!File.Exists(databasePath))
+        {
+            string message =
+                $"The Walker Media Manager database was not found at '{databasePath}'.";
+            DiagnosticsService.Log($"Database backup failed: {message}");
+            throw new FileNotFoundException(message, databasePath);
+        }
+
+        string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HHmmss");
+        string backupPath = GetUniqueBackupPath(backupFolderPath, timestamp);
+
+        try
+        {
+            // SQLite's backup API creates a consistent snapshot even if the database
+            // is currently open elsewhere in the application.
+            await using SqliteConnection source =
+                new($"Data Source={databasePath};Mode=ReadOnly");
+            await using SqliteConnection destination =
+                new($"Data Source={backupPath};Mode=ReadWriteCreate");
+
+            await source.OpenAsync(cancellationToken);
+            await destination.OpenAsync(cancellationToken);
+            source.BackupDatabase(destination);
+
+            if (!File.Exists(backupPath) || new FileInfo(backupPath).Length == 0)
+            {
+                throw new IOException(
+                    $"The backup file was not created correctly at '{backupPath}'.");
+            }
+
+            DiagnosticsService.Log($"Database backup created: {backupPath}");
+            DeleteOldBackups();
+            return backupPath;
+        }
+        catch (Exception exception)
+        {
+            TryDeleteIncompleteBackup(backupPath);
+            DiagnosticsService.LogException(
+                $"Database backup failed. Source: '{databasePath}'. Destination: '{backupPath}'.",
+                exception);
+            throw;
+        }
+    }
+
+    private static string GetUniqueBackupPath(
+        string backupFolderPath,
+        string timestamp)
+    {
+        string candidate = Path.Combine(
+            backupFolderPath,
+            $"walker_{timestamp}.db");
         int duplicateNumber = 1;
 
-        while (File.Exists(backupPath))
+        while (File.Exists(candidate))
         {
-            backupPath = Path.Combine(
-                BackupFolderPath,
+            candidate = Path.Combine(
+                backupFolderPath,
                 $"walker_{timestamp}_{duplicateNumber}.db");
-
             duplicateNumber++;
         }
 
-        await using FileStream source = new(
-            databasePath,
-            FileMode.Open,
-            FileAccess.Read,
-            FileShare.ReadWrite,
-            bufferSize: 81920,
-            useAsync: true);
-
-        await using FileStream destination = new(
-            backupPath,
-            FileMode.CreateNew,
-            FileAccess.Write,
-            FileShare.None,
-            bufferSize: 81920,
-            useAsync: true);
-
-        await source.CopyToAsync(destination, cancellationToken);
-        await destination.FlushAsync(cancellationToken);
-
-        DiagnosticsService.Log(
-            $"Database backup created: {backupPath}");
-
-        DeleteOldBackups();
-
-        return backupPath;
+        return candidate;
     }
 
     private static void DeleteOldBackups()
@@ -104,7 +136,6 @@ public static class DatabaseBackupService
                 try
                 {
                     oldBackup.Delete();
-
                     DiagnosticsService.Log(
                         $"Old database backup deleted: {oldBackup.FullName}");
                 }
@@ -121,6 +152,21 @@ public static class DatabaseBackupService
             DiagnosticsService.LogException(
                 "Database backup retention cleanup failed.",
                 exception);
+        }
+    }
+
+    private static void TryDeleteIncompleteBackup(string backupPath)
+    {
+        try
+        {
+            if (File.Exists(backupPath))
+            {
+                File.Delete(backupPath);
+            }
+        }
+        catch
+        {
+            // Preserve the original backup exception.
         }
     }
 }

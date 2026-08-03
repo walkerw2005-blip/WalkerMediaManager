@@ -1,0 +1,29 @@
+{
+  "id": "how-to-train-your-dragon",
+  "name": "How to Train Your Dragon",
+  "description": "The animated How to Train Your Dragon theatrical films",
+  "category": "Animation",
+  "studio": "DreamWorks Animation",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "How to Train Your Dragon",
+      "year": 2010,
+      "aliases": []
+    },
+    {
+      "title": "How to Train Your Dragon 2",
+      "year": 2014,
+      "aliases": []
+    },
+    {
+      "title": "How to Train Your Dragon: The Hidden World",
+      "year": 2019,
+      "aliases": [
+        "How to Train Your Dragon The Hidden World",
+        "How to Train Your Dragon 3"
+      ]
+    }
+  ]
+}

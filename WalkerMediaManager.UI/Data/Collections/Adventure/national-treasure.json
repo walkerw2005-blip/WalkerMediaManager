@@ -1,0 +1,24 @@
+{
+  "id": "national-treasure",
+  "name": "National Treasure",
+  "description": "The National Treasure theatrical films",
+  "category": "Adventure",
+  "studio": "Walt Disney Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "National Treasure",
+      "year": 2004,
+      "aliases": []
+    },
+    {
+      "title": "National Treasure: Book of Secrets",
+      "year": 2007,
+      "aliases": [
+        "National Treasure 2",
+        "Book of Secrets"
+      ]
+    }
+  ]
+}

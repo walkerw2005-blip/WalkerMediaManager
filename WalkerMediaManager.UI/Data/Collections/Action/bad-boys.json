@@ -1,0 +1,37 @@
+{
+  "id": "bad-boys",
+  "name": "Bad Boys",
+  "description": "The Bad Boys theatrical films",
+  "category": "Action",
+  "studio": "Sony Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Bad Boys",
+      "year": 1995,
+      "aliases": []
+    },
+    {
+      "title": "Bad Boys II",
+      "year": 2003,
+      "aliases": [
+        "Bad Boys 2"
+      ]
+    },
+    {
+      "title": "Bad Boys for Life",
+      "year": 2020,
+      "aliases": [
+        "Bad Boys 3"
+      ]
+    },
+    {
+      "title": "Bad Boys: Ride or Die",
+      "year": 2024,
+      "aliases": [
+        "Bad Boys 4"
+      ]
+    }
+  ]
+}

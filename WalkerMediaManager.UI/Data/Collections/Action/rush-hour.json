@@ -1,0 +1,26 @@
+{
+  "id": "rush-hour",
+  "name": "Rush Hour",
+  "description": "The Rush Hour theatrical films",
+  "category": "Action",
+  "studio": "New Line Cinema",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Rush Hour",
+      "year": 1998,
+      "aliases": []
+    },
+    {
+      "title": "Rush Hour 2",
+      "year": 2001,
+      "aliases": []
+    },
+    {
+      "title": "Rush Hour 3",
+      "year": 2007,
+      "aliases": []
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "mummy",
+  "name": "The Mummy",
+  "description": "The Brendan Fraser Mummy theatrical films",
+  "category": "Adventure",
+  "studio": "Universal Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "The Mummy",
+      "year": 1999,
+      "aliases": []
+    },
+    {
+      "title": "The Mummy Returns",
+      "year": 2001,
+      "aliases": []
+    },
+    {
+      "title": "The Mummy: Tomb of the Dragon Emperor",
+      "year": 2008,
+      "aliases": [
+        "The Mummy 3"
+      ]
+    }
+  ]
+}

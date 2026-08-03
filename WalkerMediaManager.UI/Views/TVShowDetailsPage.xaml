@@ -5,8 +5,9 @@
     xmlns:controls="using:WalkerMediaManager.UI.Controls">
 
     <ScrollViewer>
-        <Grid Padding="32" RowSpacing="20">
+        <Grid Padding="32" RowSpacing="22">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -14,53 +15,145 @@
 
             <StackPanel Orientation="Horizontal" Spacing="12">
                 <Button Content="Back" Click="BackButton_Click" />
-                <TextBlock Text="TV Show Details" Style="{ThemeResource TitleTextBlockStyle}"
+                <TextBlock Text="TV Series Details" Style="{ThemeResource TitleTextBlockStyle}"
                            VerticalAlignment="Center" />
             </StackPanel>
 
             <Grid Grid.Row="1" ColumnSpacing="28">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="260" />
+                    <ColumnDefinition Width="240" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <Border Height="410" CornerRadius="14"
-                                Background="{ThemeResource ControlFillColorSecondaryBrush}"
-                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
-                            <controls:CachedArtworkImage x:Name="PosterImage" />
-                        </Border>
+                <Border Height="360" CornerRadius="14"
+                        Background="{ThemeResource ControlFillColorSecondaryBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                    <controls:CachedArtworkImage x:Name="PosterImage" />
+                </Border>
 
-                <StackPanel Grid.Column="1" Spacing="14">
-                    <TextBlock x:Name="TitleText" Text="TV Show" FontSize="36" FontWeight="SemiBold"
-                               TextWrapping="Wrap" />
+                <StackPanel Grid.Column="1" Spacing="12">
+                    <TextBlock x:Name="TitleText" Text="TV Show" FontSize="36" FontWeight="SemiBold" TextWrapping="Wrap" />
                     <TextBlock x:Name="YearText" FontSize="20" Opacity="0.7" />
-                    <StackPanel Orientation="Horizontal" Spacing="10">
-                        <Border Padding="10,5" CornerRadius="6"
-                                Background="{ThemeResource ControlFillColorSecondaryBrush}">
-                            <TextBlock x:Name="SeasonsText" />
-                        </Border>
-                        <Border Padding="10,5" CornerRadius="6"
-                                Background="{ThemeResource ControlFillColorSecondaryBrush}">
-                            <TextBlock x:Name="EpisodesText" />
-                        </Border>
-                    </StackPanel>
-                    <TextBlock Text="Studio / Network" FontWeight="SemiBold" Margin="0,8,0,0" />
                     <TextBlock x:Name="StudioText" FontSize="18" />
-                    <TextBlock Text="Summary" FontWeight="SemiBold" Margin="0,8,0,0" />
-                    <TextBlock x:Name="SummaryText" TextWrapping="Wrap" FontSize="17"
-                               MaxWidth="900" />
+                    <TextBlock x:Name="SummaryText" TextWrapping="Wrap" FontSize="17" MaxWidth="900" />
+
+                    <Grid ColumnSpacing="12" Margin="0,8,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Border Padding="14" CornerRadius="8" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="Season progress" Opacity="0.65" />
+                                <TextBlock x:Name="SeasonProgressText" FontSize="22" FontWeight="SemiBold" />
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="1" Padding="14" CornerRadius="8" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="Status" Opacity="0.65" />
+                                <TextBlock x:Name="CompletionText" FontSize="22" FontWeight="SemiBold" />
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="2" Padding="14" CornerRadius="8" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="Digital copies" Opacity="0.65" />
+                                <TextBlock x:Name="DigitalCoverageText" FontSize="22" FontWeight="SemiBold" />
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="3" Padding="14" CornerRadius="8" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="Episodes" Opacity="0.65" />
+                                <TextBlock x:Name="EpisodesText" FontSize="22" FontWeight="SemiBold" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                    <ProgressBar x:Name="SeasonProgressBar" Minimum="0" Maximum="100" Height="8" />
                 </StackPanel>
             </Grid>
 
-            <Grid Grid.Row="2" ColumnSpacing="18">
+            <Border Grid.Row="2" Padding="18" CornerRadius="10"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                <StackPanel Spacing="12">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Season Ownership" FontSize="24" FontWeight="SemiBold" />
+                            <TextBlock Text="Plex supplies the seasons you own. Set the total released season count so missing seasons can be calculated correctly." Opacity="0.7" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Total released seasons" FontSize="12" Opacity="0.7" />
+                                <NumberBox x:Name="TotalSeasonsNumberBox" Width="155" Minimum="0" SpinButtonPlacementMode="Inline" PlaceholderText="Unknown" />
+                            </StackPanel>
+                            <Button Content="Apply Total" Click="ApplyTotalSeasons_Click" VerticalAlignment="Bottom" />
+                            <Button Content="Save All Seasons" Click="SaveAllSeasons_Click" VerticalAlignment="Bottom" />
+                        </StackPanel>
+                    </Grid>
+
+                    <ListView x:Name="SeasonsList" SelectionMode="None">
+                        <ListView.Header>
+                            <Grid Padding="10,4" ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="180" />
+                                    <ColumnDefinition Width="100" />
+                                    <ColumnDefinition Width="150" />
+                                    <ColumnDefinition Width="130" />
+                                    <ColumnDefinition Width="120" />
+                                    <ColumnDefinition Width="160" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Season" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="1" Text="Owned" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="2" Text="Format" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="3" Text="Digital" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="4" Text="Price" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="5" Text="Location" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="6" Text="Notes" FontWeight="SemiBold" />
+                            </Grid>
+                        </ListView.Header>
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Padding="10,8" ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="180" />
+                                        <ColumnDefinition Width="100" />
+                                        <ColumnDefinition Width="150" />
+                                        <ColumnDefinition Width="130" />
+                                        <ColumnDefinition Width="120" />
+                                        <ColumnDefinition Width="160" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" FontWeight="SemiBold" />
+                                    <CheckBox Grid.Column="1" IsChecked="{Binding IsOwned, Mode=TwoWay}" VerticalAlignment="Center" />
+                                    <ComboBox Grid.Column="2" SelectedValue="{Binding Format, Mode=TwoWay}" SelectedValuePath="Content">
+                                        <ComboBoxItem Content="DVD" />
+                                        <ComboBoxItem Content="Blu-ray" />
+                                        <ComboBoxItem Content="4K UHD" />
+                                        <ComboBoxItem Content="Other" />
+                                    </ComboBox>
+                                    <CheckBox Grid.Column="3" Content="Plex" IsChecked="{Binding HasDigitalCopy, Mode=TwoWay}" VerticalAlignment="Center" />
+                                    <TextBox Grid.Column="4" Text="{Binding PurchasePrice, Mode=TwoWay}" PlaceholderText="0.00" />
+                                    <TextBox Grid.Column="5" Text="{Binding StorageLocation, Mode=TwoWay}" PlaceholderText="Shelf / cabinet" />
+                                    <TextBox Grid.Column="6" Text="{Binding Notes, Mode=TwoWay}" PlaceholderText="Optional notes" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </StackPanel>
+            </Border>
+
+            <Grid Grid.Row="3" ColumnSpacing="18">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-
-                <Border Padding="18" CornerRadius="10"
-                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                <Border Padding="18" CornerRadius="10" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
                     <StackPanel Spacing="8">
                         <TextBlock Text="Plex Information" FontSize="20" FontWeight="SemiBold" />
                         <TextBlock x:Name="PlexStatusText" />
@@ -69,22 +162,21 @@
                         <TextBlock x:Name="LastSyncedText" TextWrapping="Wrap" />
                     </StackPanel>
                 </Border>
-
-                <Border Grid.Column="1" Padding="18" CornerRadius="10"
-                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                <Border Grid.Column="1" Padding="18" CornerRadius="10" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
                     <StackPanel Spacing="8">
-                        <TextBlock Text="External IDs and Artwork" FontSize="20" FontWeight="SemiBold" />
+                        <TextBlock Text="External IDs" FontSize="20" FontWeight="SemiBold" />
                         <TextBlock x:Name="IMDbText" TextWrapping="Wrap" />
                         <TextBlock x:Name="TMDbText" TextWrapping="Wrap" />
-                        <TextBlock x:Name="PosterPathText" TextWrapping="Wrap" />
-                        <TextBlock x:Name="BackgroundPathText" TextWrapping="Wrap" />
+                        <TextBlock x:Name="TVMazeText" TextWrapping="Wrap" />
+                        <TextBlock x:Name="SeriesStatusText" TextWrapping="Wrap" />
+                        <TextBlock x:Name="AirDatesText" TextWrapping="Wrap" />
+                        <TextBlock x:Name="NetworkText" TextWrapping="Wrap" />
+                        <TextBlock x:Name="MetadataSyncedText" TextWrapping="Wrap" />
                     </StackPanel>
                 </Border>
             </Grid>
 
-            <InfoBar x:Name="StatusInfoBar" Grid.Row="2" Margin="0,220,0,0"
-                     IsOpen="False" IsClosable="True" />
+            <InfoBar x:Name="StatusInfoBar" Grid.Row="3" Margin="0,180,0,0" IsOpen="False" IsClosable="True" />
         </Grid>
     </ScrollViewer>
 </Page>

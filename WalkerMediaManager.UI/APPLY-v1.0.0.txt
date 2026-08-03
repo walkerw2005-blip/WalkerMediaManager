@@ -1,0 +1,31 @@
+Walker Media Manager 1.0.0 Update
+=================================
+
+This package contains complete replacement files arranged in their project folders.
+
+Apply
+-----
+1. Close Walker Media Manager and Visual Studio.
+2. Make sure your Version 1.0 RC Baseline commit has been pushed.
+3. Extract this ZIP into the root of the WalkerMediaManager.UI project.
+4. Allow Windows to replace existing files.
+5. Reopen the solution in Visual Studio.
+6. Select Release and x64, then choose Build > Rebuild Solution.
+7. Run the app and perform one Movie sync.
+8. Confirm a backup appears in:
+   %LOCALAPPDATA%\WalkerMediaManager\Backups
+
+Build deliverables
+------------------
+- Run Build-Portable.cmd to create the portable folder.
+- Run Build-Installer.cmd to create the installer after Inno Setup 6 is installed.
+
+Recommended commit message
+--------------------------
+Finalize Walker Media Manager 1.0.0
+
+Verification
+------------
+This update was reviewed and statically checked in the available environment.
+The WinUI application could not be compiled here because the Windows/.NET build
+workload is not available; the final rebuild must be run in Visual Studio on Windows.

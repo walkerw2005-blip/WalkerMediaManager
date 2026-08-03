@@ -1,0 +1,26 @@
+{
+  "id": "tron",
+  "name": "TRON",
+  "description": "The TRON theatrical films",
+  "category": "SciFi",
+  "studio": "Walt Disney Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "TRON",
+      "year": 1982,
+      "aliases": [
+        "Tron"
+      ]
+    },
+    {
+      "title": "TRON: Legacy",
+      "year": 2010,
+      "aliases": [
+        "Tron Legacy",
+        "Tron 2"
+      ]
+    }
+  ]
+}

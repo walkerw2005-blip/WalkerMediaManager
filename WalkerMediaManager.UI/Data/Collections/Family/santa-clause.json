@@ -1,0 +1,28 @@
+{
+  "id": "santa-clause",
+  "name": "The Santa Clause",
+  "description": "The Santa Clause theatrical films",
+  "category": "Family",
+  "studio": "Walt Disney Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "The Santa Clause",
+      "year": 1994,
+      "aliases": []
+    },
+    {
+      "title": "The Santa Clause 2",
+      "year": 2002,
+      "aliases": []
+    },
+    {
+      "title": "The Santa Clause 3: The Escape Clause",
+      "year": 2006,
+      "aliases": [
+        "The Santa Clause 3"
+      ]
+    }
+  ]
+}

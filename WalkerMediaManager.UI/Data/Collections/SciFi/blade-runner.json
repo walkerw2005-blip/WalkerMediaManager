@@ -1,0 +1,21 @@
+{
+  "id": "blade-runner",
+  "name": "Blade Runner",
+  "description": "The Blade Runner theatrical films",
+  "category": "SciFi",
+  "studio": "Warner Bros.",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Blade Runner",
+      "year": 1982,
+      "aliases": []
+    },
+    {
+      "title": "Blade Runner 2049",
+      "year": 2017,
+      "aliases": []
+    }
+  ]
+}

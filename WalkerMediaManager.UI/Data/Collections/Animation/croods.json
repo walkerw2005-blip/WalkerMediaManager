@@ -1,0 +1,26 @@
+{
+  "id": "croods",
+  "name": "The Croods",
+  "description": "The Croods theatrical films",
+  "category": "Animation",
+  "studio": "DreamWorks Animation",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "The Croods",
+      "year": 2013,
+      "aliases": [
+        "Croods"
+      ]
+    },
+    {
+      "title": "The Croods: A New Age",
+      "year": 2020,
+      "aliases": [
+        "Croods A New Age",
+        "The Croods 2"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "dollars-trilogy",
+  "name": "Dollars Trilogy",
+  "description": "Sergio Leone’s Dollars trilogy",
+  "category": "Western",
+  "studio": "United Artists",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "A Fistful of Dollars",
+      "year": 1964,
+      "aliases": []
+    },
+    {
+      "title": "For a Few Dollars More",
+      "year": 1965,
+      "aliases": []
+    },
+    {
+      "title": "The Good, the Bad and the Ugly",
+      "year": 1966,
+      "aliases": [
+        "The Good the Bad and the Ugly"
+      ]
+    }
+  ]
+}

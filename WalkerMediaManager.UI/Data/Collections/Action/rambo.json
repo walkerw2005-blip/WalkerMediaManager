@@ -1,0 +1,47 @@
+{
+  "id": "rambo",
+  "name": "Rambo",
+  "description": "The Rambo theatrical films",
+  "category": "Action",
+  "studio": "Lionsgate",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "First Blood",
+      "year": 1982,
+      "aliases": [
+        "Rambo First Blood"
+      ]
+    },
+    {
+      "title": "Rambo: First Blood Part II",
+      "year": 1985,
+      "aliases": [
+        "Rambo 2",
+        "First Blood Part 2"
+      ]
+    },
+    {
+      "title": "Rambo III",
+      "year": 1988,
+      "aliases": [
+        "Rambo 3"
+      ]
+    },
+    {
+      "title": "Rambo",
+      "year": 2008,
+      "aliases": [
+        "Rambo 4"
+      ]
+    },
+    {
+      "title": "Rambo: Last Blood",
+      "year": 2019,
+      "aliases": [
+        "Rambo 5"
+      ]
+    }
+  ]
+}

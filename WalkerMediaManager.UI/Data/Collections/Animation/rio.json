@@ -1,0 +1,21 @@
+{
+  "id": "rio",
+  "name": "Rio",
+  "description": "The Rio theatrical films",
+  "category": "Animation",
+  "studio": "Blue Sky Studios",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Rio",
+      "year": 2011,
+      "aliases": []
+    },
+    {
+      "title": "Rio 2",
+      "year": 2014,
+      "aliases": []
+    }
+  ]
+}

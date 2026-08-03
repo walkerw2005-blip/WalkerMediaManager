@@ -1,0 +1,36 @@
+{
+  "id": "bourne",
+  "name": "Bourne",
+  "description": "The Bourne theatrical films",
+  "category": "Action",
+  "studio": "Universal Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "The Bourne Identity",
+      "year": 2002,
+      "aliases": []
+    },
+    {
+      "title": "The Bourne Supremacy",
+      "year": 2004,
+      "aliases": []
+    },
+    {
+      "title": "The Bourne Ultimatum",
+      "year": 2007,
+      "aliases": []
+    },
+    {
+      "title": "The Bourne Legacy",
+      "year": 2012,
+      "aliases": []
+    },
+    {
+      "title": "Jason Bourne",
+      "year": 2016,
+      "aliases": []
+    }
+  ]
+}

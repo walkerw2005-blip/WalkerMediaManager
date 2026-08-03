@@ -1,0 +1,47 @@
+{
+  "id": "shrek",
+  "name": "Shrek",
+  "description": "The Shrek theatrical films and spin-offs",
+  "category": "Animation",
+  "studio": "DreamWorks Animation",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Shrek",
+      "year": 2001,
+      "aliases": []
+    },
+    {
+      "title": "Shrek 2",
+      "year": 2004,
+      "aliases": []
+    },
+    {
+      "title": "Shrek the Third",
+      "year": 2007,
+      "aliases": [
+        "Shrek 3"
+      ]
+    },
+    {
+      "title": "Shrek Forever After",
+      "year": 2010,
+      "aliases": [
+        "Shrek 4"
+      ]
+    },
+    {
+      "title": "Puss in Boots",
+      "year": 2011,
+      "aliases": []
+    },
+    {
+      "title": "Puss in Boots: The Last Wish",
+      "year": 2022,
+      "aliases": [
+        "Puss in Boots The Last Wish"
+      ]
+    }
+  ]
+}

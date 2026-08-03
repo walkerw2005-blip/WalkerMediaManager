@@ -1,0 +1,62 @@
+{
+  "id": "conjuring-universe",
+  "name": "The Conjuring Universe",
+  "description": "The Conjuring Universe theatrical films through 2023",
+  "category": "Horror",
+  "studio": "Warner Bros.",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "The Conjuring",
+      "year": 2013,
+      "aliases": []
+    },
+    {
+      "title": "Annabelle",
+      "year": 2014,
+      "aliases": []
+    },
+    {
+      "title": "The Conjuring 2",
+      "year": 2016,
+      "aliases": []
+    },
+    {
+      "title": "Annabelle: Creation",
+      "year": 2017,
+      "aliases": [
+        "Annabelle Creation"
+      ]
+    },
+    {
+      "title": "The Nun",
+      "year": 2018,
+      "aliases": []
+    },
+    {
+      "title": "The Curse of La Llorona",
+      "year": 2019,
+      "aliases": []
+    },
+    {
+      "title": "Annabelle Comes Home",
+      "year": 2019,
+      "aliases": []
+    },
+    {
+      "title": "The Conjuring: The Devil Made Me Do It",
+      "year": 2021,
+      "aliases": [
+        "The Conjuring 3"
+      ]
+    },
+    {
+      "title": "The Nun II",
+      "year": 2023,
+      "aliases": [
+        "The Nun 2"
+      ]
+    }
+  ]
+}

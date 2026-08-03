@@ -1,0 +1,23 @@
+{
+  "id": "happy-feet",
+  "name": "Happy Feet",
+  "description": "The Happy Feet theatrical films",
+  "category": "Animation",
+  "studio": "Warner Bros.",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Happy Feet",
+      "year": 2006,
+      "aliases": []
+    },
+    {
+      "title": "Happy Feet Two",
+      "year": 2011,
+      "aliases": [
+        "Happy Feet 2"
+      ]
+    }
+  ]
+}

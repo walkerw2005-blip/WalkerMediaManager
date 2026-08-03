@@ -1,0 +1,26 @@
+{
+  "id": "dark-knight",
+  "name": "The Dark Knight Trilogy",
+  "description": "Christopher Nolan’s Batman trilogy",
+  "category": "Superhero",
+  "studio": "Warner Bros.",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Batman Begins",
+      "year": 2005,
+      "aliases": []
+    },
+    {
+      "title": "The Dark Knight",
+      "year": 2008,
+      "aliases": []
+    },
+    {
+      "title": "The Dark Knight Rises",
+      "year": 2012,
+      "aliases": []
+    }
+  ]
+}

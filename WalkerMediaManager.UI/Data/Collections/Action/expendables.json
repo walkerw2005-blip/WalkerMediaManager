@@ -1,0 +1,40 @@
+{
+  "id": "expendables",
+  "name": "The Expendables",
+  "description": "The Expendables theatrical films",
+  "category": "Action",
+  "studio": "Lionsgate",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "The Expendables",
+      "year": 2010,
+      "aliases": [
+        "Expendables"
+      ]
+    },
+    {
+      "title": "The Expendables 2",
+      "year": 2012,
+      "aliases": [
+        "Expendables 2"
+      ]
+    },
+    {
+      "title": "The Expendables 3",
+      "year": 2014,
+      "aliases": [
+        "Expendables 3"
+      ]
+    },
+    {
+      "title": "Expend4bles",
+      "year": 2023,
+      "aliases": [
+        "The Expendables 4",
+        "Expendables 4"
+      ]
+    }
+  ]
+}

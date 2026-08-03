@@ -1,0 +1,23 @@
+{
+  "id": "crank",
+  "name": "Crank",
+  "description": "The Crank theatrical films",
+  "category": "Action",
+  "studio": "Lionsgate",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Crank",
+      "year": 2006,
+      "aliases": []
+    },
+    {
+      "title": "Crank: High Voltage",
+      "year": 2009,
+      "aliases": [
+        "Crank 2"
+      ]
+    }
+  ]
+}

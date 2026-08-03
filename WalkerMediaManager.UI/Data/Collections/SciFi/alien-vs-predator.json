@@ -1,0 +1,27 @@
+{
+  "id": "alien-vs-predator",
+  "name": "Alien vs. Predator",
+  "description": "The Alien vs. Predator crossover films",
+  "category": "SciFi",
+  "studio": "20th Century Studios",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Alien vs. Predator",
+      "year": 2004,
+      "aliases": [
+        "AVP Alien vs Predator",
+        "AVP"
+      ]
+    },
+    {
+      "title": "Aliens vs. Predator: Requiem",
+      "year": 2007,
+      "aliases": [
+        "AVPR",
+        "Alien vs Predator Requiem"
+      ]
+    }
+  ]
+}

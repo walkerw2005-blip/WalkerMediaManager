@@ -1,0 +1,28 @@
+{
+  "id": "stuart-little",
+  "name": "Stuart Little",
+  "description": "The Stuart Little theatrical films",
+  "category": "Family",
+  "studio": "Sony Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Stuart Little",
+      "year": 1999,
+      "aliases": []
+    },
+    {
+      "title": "Stuart Little 2",
+      "year": 2002,
+      "aliases": []
+    },
+    {
+      "title": "Stuart Little 3: Call of the Wild",
+      "year": 2005,
+      "aliases": [
+        "Stuart Little 3"
+      ]
+    }
+  ]
+}

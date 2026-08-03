@@ -1,0 +1,39 @@
+{
+  "id": "avengers",
+  "name": "Avengers",
+  "description": "The Avengers theatrical films through Endgame",
+  "category": "Superhero",
+  "studio": "Marvel Studios",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "The Avengers",
+      "year": 2012,
+      "aliases": [
+        "Marvels The Avengers"
+      ]
+    },
+    {
+      "title": "Avengers: Age of Ultron",
+      "year": 2015,
+      "aliases": [
+        "Avengers 2"
+      ]
+    },
+    {
+      "title": "Avengers: Infinity War",
+      "year": 2018,
+      "aliases": [
+        "Avengers 3"
+      ]
+    },
+    {
+      "title": "Avengers: Endgame",
+      "year": 2019,
+      "aliases": [
+        "Avengers 4"
+      ]
+    }
+  ]
+}

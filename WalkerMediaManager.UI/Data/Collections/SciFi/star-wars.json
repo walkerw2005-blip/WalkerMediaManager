@@ -1,0 +1,22 @@
+{
+  "id": "star-wars-theatrical",
+  "name": "Star Wars - Theatrical Movies",
+  "description": "The nine Skywalker Saga episodes plus Rogue One and Solo.",
+  "category": "Science Fiction",
+  "studio": "Lucasfilm",
+  "type": "Franchise",
+  "aliases": ["Star Wars"],
+  "movies": [
+    {"title":"Star Wars: Episode I - The Phantom Menace","year":1999,"aliases":["The Phantom Menace","Star Wars Episode I The Phantom Menace"]},
+    {"title":"Star Wars: Episode II - Attack of the Clones","year":2002,"aliases":["Attack of the Clones","Star Wars Episode II Attack of the Clones"]},
+    {"title":"Star Wars: Episode III - Revenge of the Sith","year":2005,"aliases":["Revenge of the Sith","Star Wars Episode III Revenge of the Sith"]},
+    {"title":"Star Wars","year":1977,"aliases":["Star Wars: Episode IV - A New Hope","A New Hope","Star Wars Episode IV A New Hope"]},
+    {"title":"The Empire Strikes Back","year":1980,"aliases":["Star Wars: Episode V - The Empire Strikes Back","Star Wars Episode V The Empire Strikes Back"]},
+    {"title":"Return of the Jedi","year":1983,"aliases":["Star Wars: Episode VI - Return of the Jedi","Star Wars Episode VI Return of the Jedi"]},
+    {"title":"Star Wars: Episode VII - The Force Awakens","year":2015,"aliases":["The Force Awakens","Star Wars Episode VII The Force Awakens"]},
+    {"title":"Star Wars: Episode VIII - The Last Jedi","year":2017,"aliases":["The Last Jedi","Star Wars Episode VIII The Last Jedi"]},
+    {"title":"Star Wars: Episode IX - The Rise of Skywalker","year":2019,"aliases":["Star Wars: The Rise of Skywalker","The Rise of Skywalker","Star Wars Episode IX","Star Wars: Episode IX","Episode IX - The Rise of Skywalker","Star Wars Episode IX The Rise of Skywalker","Star Wars Rise of Skywalker"]},
+    {"title":"Rogue One: A Star Wars Story","year":2016,"aliases":["Rogue One"]},
+    {"title":"Solo: A Star Wars Story","year":2018,"aliases":["Solo"]}
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "id": "ghostbusters",
+  "name": "Ghostbusters",
+  "description": "The Ghostbusters theatrical films",
+  "category": "SciFi",
+  "studio": "Sony Pictures",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Ghostbusters",
+      "year": 1984,
+      "aliases": []
+    },
+    {
+      "title": "Ghostbusters II",
+      "year": 1989,
+      "aliases": [
+        "Ghostbusters 2"
+      ]
+    },
+    {
+      "title": "Ghostbusters",
+      "year": 2016,
+      "aliases": [
+        "Ghostbusters Answer the Call"
+      ]
+    },
+    {
+      "title": "Ghostbusters: Afterlife",
+      "year": 2021,
+      "aliases": [
+        "Ghostbusters Afterlife"
+      ]
+    },
+    {
+      "title": "Ghostbusters: Frozen Empire",
+      "year": 2024,
+      "aliases": [
+        "Ghostbusters Frozen Empire"
+      ]
+    }
+  ]
+}

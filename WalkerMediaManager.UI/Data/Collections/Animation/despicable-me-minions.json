@@ -1,0 +1,43 @@
+{
+  "id": "despicable-me-minions",
+  "name": "Despicable Me and Minions",
+  "description": "The Despicable Me and Minions theatrical films",
+  "category": "Animation",
+  "studio": "Illumination",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Despicable Me",
+      "year": 2010,
+      "aliases": []
+    },
+    {
+      "title": "Despicable Me 2",
+      "year": 2013,
+      "aliases": []
+    },
+    {
+      "title": "Minions",
+      "year": 2015,
+      "aliases": []
+    },
+    {
+      "title": "Despicable Me 3",
+      "year": 2017,
+      "aliases": []
+    },
+    {
+      "title": "Minions: The Rise of Gru",
+      "year": 2022,
+      "aliases": [
+        "Minions The Rise of Gru"
+      ]
+    },
+    {
+      "title": "Despicable Me 4",
+      "year": 2024,
+      "aliases": []
+    }
+  ]
+}

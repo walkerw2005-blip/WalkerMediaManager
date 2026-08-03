@@ -1,0 +1,28 @@
+{
+  "id": "paddington",
+  "name": "Paddington",
+  "description": "The Paddington theatrical films",
+  "category": "Family",
+  "studio": "StudioCanal",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Paddington",
+      "year": 2014,
+      "aliases": []
+    },
+    {
+      "title": "Paddington 2",
+      "year": 2017,
+      "aliases": []
+    },
+    {
+      "title": "Paddington in Peru",
+      "year": 2024,
+      "aliases": [
+        "Paddington 3"
+      ]
+    }
+  ]
+}

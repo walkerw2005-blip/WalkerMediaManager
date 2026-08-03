@@ -1,0 +1,30 @@
+{
+  "id": "night-at-the-museum",
+  "name": "Night at the Museum",
+  "description": "The Night at the Museum theatrical films",
+  "category": "Family",
+  "studio": "20th Century Studios",
+  "type": "Franchise",
+  "aliases": [],
+  "movies": [
+    {
+      "title": "Night at the Museum",
+      "year": 2006,
+      "aliases": []
+    },
+    {
+      "title": "Night at the Museum: Battle of the Smithsonian",
+      "year": 2009,
+      "aliases": [
+        "Night at the Museum 2"
+      ]
+    },
+    {
+      "title": "Night at the Museum: Secret of the Tomb",
+      "year": 2014,
+      "aliases": [
+        "Night at the Museum 3"
+      ]
+    }
+  ]
+}
