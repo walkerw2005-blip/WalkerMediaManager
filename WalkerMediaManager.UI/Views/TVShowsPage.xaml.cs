@@ -168,13 +168,18 @@ public sealed partial class TvShowsPage : Page
         RefreshMetadataButton.IsEnabled = false;
         MetadataProgressRing.IsActive = true;
         MetadataProgressRing.Visibility = Visibility.Visible;
+        MetadataProgressBar.Value = 0;
+        MetadataProgressBar.Maximum = 1;
+        MetadataProgressBar.Visibility = Visibility.Visible;
 
-        Progress<string> progress = new(message =>
+        Progress<TVMetadataProgress> progress = new(update =>
         {
             StatusInfoBar.Title = "Refreshing TV metadata";
-            StatusInfoBar.Message = message;
+            StatusInfoBar.Message = update.Message;
             StatusInfoBar.Severity = InfoBarSeverity.Informational;
             StatusInfoBar.IsOpen = true;
+            MetadataProgressBar.Maximum = Math.Max(1, update.Total);
+            MetadataProgressBar.Value = Math.Min(update.Current, update.Total);
         });
 
         try
@@ -197,6 +202,7 @@ public sealed partial class TvShowsPage : Page
         {
             MetadataProgressRing.IsActive = false;
             MetadataProgressRing.Visibility = Visibility.Collapsed;
+            MetadataProgressBar.Visibility = Visibility.Collapsed;
             RefreshMetadataButton.IsEnabled = true;
             _isLoading = false;
         }

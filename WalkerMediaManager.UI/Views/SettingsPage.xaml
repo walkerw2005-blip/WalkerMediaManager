@@ -81,6 +81,69 @@
 
                 <StackPanel Spacing="16">
                     <TextBlock
+                        Text="Artwork Maintenance"
+                        FontSize="24"
+                        FontWeight="SemiBold" />
+
+                    <TextBlock
+                        Text="Download uncached movie and TV posters, rebuild all cached posters, verify cached image files, or clear only the disposable artwork cache. Your library records and poster source paths are not deleted."
+                        TextWrapping="Wrap"
+                        Opacity="0.7" />
+
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <Button
+                            x:Name="RefreshMissingPostersButton"
+                            Content="Refresh Missing Posters"
+                            Padding="18,10"
+                            Click="RefreshMissingPostersButton_Click" />
+
+                        <Button
+                            x:Name="RefreshAllPostersButton"
+                            Content="Refresh All Posters"
+                            Padding="18,10"
+                            Click="RefreshAllPostersButton_Click" />
+
+                        <Button
+                            x:Name="VerifyArtworkCacheButton"
+                            Content="Verify Artwork Cache"
+                            Padding="18,10"
+                            Click="VerifyArtworkCacheButton_Click" />
+
+                        <Button
+                            x:Name="ClearArtworkCacheButton"
+                            Content="Clear Artwork Cache"
+                            Padding="18,10"
+                            Click="ClearArtworkCacheButton_Click" />
+                    </StackPanel>
+
+                    <ProgressBar
+                        x:Name="ArtworkMaintenanceProgressBar"
+                        Minimum="0"
+                        Maximum="1"
+                        Value="0"
+                        Visibility="Collapsed" />
+
+                    <TextBlock
+                        x:Name="ArtworkMaintenanceProgressText"
+                        TextWrapping="Wrap"
+                        Opacity="0.7" />
+
+                    <InfoBar
+                        x:Name="ArtworkMaintenanceInfoBar"
+                        IsOpen="False"
+                        IsClosable="True" />
+                </StackPanel>
+            </Border>
+
+            <Border
+                Padding="24"
+                CornerRadius="12"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1">
+
+                <StackPanel Spacing="16">
+                    <TextBlock
                         Text="Plex Movie Sync"
                         FontSize="24"
                         FontWeight="SemiBold" />

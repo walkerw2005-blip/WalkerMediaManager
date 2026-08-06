@@ -22,6 +22,8 @@ public sealed partial class SettingsPage : Page
     private readonly PlexService _plexService = new();
     private readonly PlexMovieSyncService _plexMovieSyncService = new();
     private readonly PlexTVSyncService _plexTVSyncService = new();
+    private readonly ArtworkMaintenanceService _artworkMaintenanceService = new();
+    private bool _artworkMaintenanceRunning;
 
     public ObservableCollection<PlexLibrarySection> Libraries { get; } = [];
     public ObservableCollection<PlexLibrarySection> MovieLibraries { get; } = [];
@@ -360,6 +362,151 @@ public sealed partial class SettingsPage : Page
         }
     }
 
+    private async void RefreshMissingPostersButton_Click(object sender, RoutedEventArgs e)
+    {
+        await RunArtworkRefreshAsync(refreshAll: false);
+    }
+
+    private async void RefreshAllPostersButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (!await ConfirmArtworkActionAsync(
+                "Refresh every cached poster?",
+                "Every movie and TV poster with a source path will be downloaded again. This may take several minutes.",
+                "Refresh All"))
+        {
+            return;
+        }
+
+        await RunArtworkRefreshAsync(refreshAll: true);
+    }
+
+    private async Task RunArtworkRefreshAsync(bool refreshAll)
+    {
+        if (_artworkMaintenanceRunning)
+        {
+            return;
+        }
+
+        SetArtworkMaintenanceBusy(true, indeterminate: false);
+        ArtworkMaintenanceProgressText.Text = refreshAll
+            ? "Preparing to refresh all posters..."
+            : "Checking for uncached posters...";
+
+        Progress<ArtworkMaintenanceProgress> progress = new(update =>
+        {
+            ArtworkMaintenanceProgressBar.Maximum = Math.Max(1, update.Total);
+            ArtworkMaintenanceProgressBar.Value = Math.Min(update.Current, update.Total);
+            ArtworkMaintenanceProgressText.Text = update.Message;
+        });
+
+        try
+        {
+            ArtworkMaintenanceResult result = await _artworkMaintenanceService.RefreshPostersAsync(
+                refreshAll,
+                progress);
+            ArtworkMaintenanceProgressText.Text = "Artwork refresh complete.";
+            ShowArtworkMaintenanceMessage(
+                result.Summary,
+                result.FailedCount > 0 || result.MissingSourceCount > 0
+                    ? InfoBarSeverity.Warning
+                    : InfoBarSeverity.Success);
+        }
+        catch (Exception exception)
+        {
+            DiagnosticsService.LogException("SettingsPage artwork refresh failed.", exception);
+            ShowArtworkMaintenanceMessage(
+                $"Artwork refresh failed: {exception.Message}",
+                InfoBarSeverity.Error);
+        }
+        finally
+        {
+            SetArtworkMaintenanceBusy(false, indeterminate: false);
+        }
+    }
+
+    private async void VerifyArtworkCacheButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_artworkMaintenanceRunning)
+        {
+            return;
+        }
+
+        SetArtworkMaintenanceBusy(true, indeterminate: true);
+        ArtworkMaintenanceProgressText.Text = "Verifying cached artwork files...";
+
+        try
+        {
+            ArtworkCacheVerificationResult result = await ArtworkService.Current.VerifyCacheAsync();
+            ArtworkMaintenanceProgressText.Text = "Artwork cache verification complete.";
+            ShowArtworkMaintenanceMessage(
+                result.Summary,
+                result.RemovedFiles > 0 ? InfoBarSeverity.Warning : InfoBarSeverity.Success);
+        }
+        catch (Exception exception)
+        {
+            DiagnosticsService.LogException("SettingsPage artwork cache verification failed.", exception);
+            ShowArtworkMaintenanceMessage(
+                $"Artwork cache verification failed: {exception.Message}",
+                InfoBarSeverity.Error);
+        }
+        finally
+        {
+            SetArtworkMaintenanceBusy(false, indeterminate: false);
+        }
+    }
+
+    private async void ClearArtworkCacheButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (!await ConfirmArtworkActionAsync(
+                "Clear the artwork cache?",
+                "Downloaded poster files and missing-artwork markers will be removed. Library records and source paths will remain unchanged, and posters will download again as needed.",
+                "Clear Cache"))
+        {
+            return;
+        }
+
+        SetArtworkMaintenanceBusy(true, indeterminate: true);
+        ArtworkMaintenanceProgressText.Text = "Clearing the artwork cache...";
+
+        try
+        {
+            await ArtworkService.Current.ClearCacheAsync();
+            ArtworkMaintenanceProgressText.Text = "Artwork cache cleared.";
+            ShowArtworkMaintenanceMessage(
+                "The disposable artwork cache was cleared. Your library and poster source paths were not changed.",
+                InfoBarSeverity.Success);
+        }
+        catch (Exception exception)
+        {
+            DiagnosticsService.LogException("SettingsPage could not clear the artwork cache.", exception);
+            ShowArtworkMaintenanceMessage(
+                $"The artwork cache could not be cleared: {exception.Message}",
+                InfoBarSeverity.Error);
+        }
+        finally
+        {
+            SetArtworkMaintenanceBusy(false, indeterminate: false);
+        }
+    }
+
+    private async Task<bool> ConfirmArtworkActionAsync(
+        string title,
+        string message,
+        string primaryButtonText)
+    {
+        ContentDialog dialog = new()
+        {
+            Title = title,
+            Content = message,
+            PrimaryButtonText = primaryButtonText,
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Close,
+            XamlRoot = XamlRoot
+        };
+
+        return await dialog.ShowAsync() == ContentDialogResult.Primary;
+    }
+
     private void RestoreSelectedLibraries()
     {
         string movieKey = SettingsService.GetString(MovieLibraryKeySettingKey);
@@ -506,6 +653,32 @@ public sealed partial class SettingsPage : Page
         TVSyncProgressRing.IsActive = isBusy;
         TVSyncProgressRing.Visibility =
             isBusy ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void SetArtworkMaintenanceBusy(bool isBusy, bool indeterminate)
+    {
+        _artworkMaintenanceRunning = isBusy;
+        RefreshMissingPostersButton.IsEnabled = !isBusy;
+        RefreshAllPostersButton.IsEnabled = !isBusy;
+        VerifyArtworkCacheButton.IsEnabled = !isBusy;
+        ClearArtworkCacheButton.IsEnabled = !isBusy;
+        ArtworkMaintenanceProgressBar.IsIndeterminate = isBusy && indeterminate;
+        ArtworkMaintenanceProgressBar.Visibility = isBusy
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+
+        if (isBusy && !indeterminate)
+        {
+            ArtworkMaintenanceProgressBar.Value = 0;
+            ArtworkMaintenanceProgressBar.Maximum = 1;
+        }
+    }
+
+    private void ShowArtworkMaintenanceMessage(string message, InfoBarSeverity severity)
+    {
+        ArtworkMaintenanceInfoBar.Message = message;
+        ArtworkMaintenanceInfoBar.Severity = severity;
+        ArtworkMaintenanceInfoBar.IsOpen = true;
     }
 
     private void ShowConnectionMessage(

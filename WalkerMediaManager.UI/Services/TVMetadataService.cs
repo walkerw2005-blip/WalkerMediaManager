@@ -24,7 +24,7 @@ public sealed class TVMetadataService
     private readonly TVShowRepository _repository = new();
 
     public async Task<TVMetadataSyncResult> RefreshAllAsync(
-        IProgress<string>? progress = null,
+        IProgress<TVMetadataProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
         List<TVShow> shows = await _repository.GetAllAsync();
@@ -36,7 +36,11 @@ public sealed class TVMetadataService
         {
             cancellationToken.ThrowIfCancellationRequested();
             TVShow show = shows[index];
-            progress?.Report($"Refreshing {index + 1} of {shows.Count}: {show.Title}");
+            progress?.Report(new TVMetadataProgress(
+                index + 1,
+                shows.Count,
+                show.Title,
+                "Matching provider metadata"));
 
             try
             {
@@ -45,10 +49,20 @@ public sealed class TVMetadataService
                 {
                     result.NotFoundCount++;
                     AddDiagnostic(result, show, matchResult, "NotFound", matchResult.Reason);
+                    progress?.Report(new TVMetadataProgress(
+                        index + 1,
+                        shows.Count,
+                        show.Title,
+                        "No safe match"));
                     continue;
                 }
 
                 TVMazeShow match = matchResult.Show;
+                progress?.Report(new TVMetadataProgress(
+                    index + 1,
+                    shows.Count,
+                    show.Title,
+                    "Loading season data"));
                 IReadOnlyList<TVMazeSeason> seasons = await GetSeasonsAsync(match.Id, cancellationToken);
                 int totalSeasons = seasons
                     .Where(season => season.Number > 0)
@@ -73,6 +87,11 @@ public sealed class TVMetadataService
                 show.IMDbId = FirstNonEmpty(match.IMDbId, show.IMDbId, ExtractExternalId(show.PlexGuid, "imdb"));
                 show.MetadataLastSynced = DateTimeOffset.UtcNow.ToString("O");
 
+                progress?.Report(new TVMetadataProgress(
+                    index + 1,
+                    shows.Count,
+                    show.Title,
+                    "Saving metadata"));
                 await _repository.UpdateMetadataAsync(show);
                 result.UpdatedCount++;
 
@@ -80,6 +99,11 @@ public sealed class TVMetadataService
                     ? "Matched provider record, but neither the provider nor the existing record contains a poster."
                     : string.Empty;
                 AddDiagnostic(result, show, matchResult, "Updated", reason);
+                progress?.Report(new TVMetadataProgress(
+                    index + 1,
+                    shows.Count,
+                    show.Title,
+                    "Complete"));
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -90,6 +114,11 @@ public sealed class TVMetadataService
                 result.FailedCount++;
                 TVMatchResult failedMatch = TVMatchResult.Failed(exception.Message);
                 AddDiagnostic(result, show, failedMatch, "Failed", exception.Message);
+                progress?.Report(new TVMetadataProgress(
+                    index + 1,
+                    shows.Count,
+                    show.Title,
+                    "Failed"));
                 DiagnosticsService.LogException($"TV metadata refresh failed for '{show.Title}'.", exception);
             }
             finally

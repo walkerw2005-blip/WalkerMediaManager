@@ -8,6 +8,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using WalkerMediaManager.UI.Models;
+using Windows.Graphics.Imaging;
 using Windows.Security.Credentials;
 using Windows.Storage;
 
@@ -150,16 +152,146 @@ public sealed class ArtworkService
         _inFlightRequests.Clear();
 
         string folderPath = GetCacheFolderPath();
+        int failedDeletes = 0;
         if (Directory.Exists(folderPath))
         {
             foreach (string filePath in Directory.EnumerateFiles(folderPath))
             {
-                TryDeleteFile(filePath);
+                if (!TryDeleteFile(filePath))
+                {
+                    failedDeletes++;
+                }
             }
         }
 
-        Debug.WriteLine("Artwork cache cleared.");
+        if (failedDeletes > 0)
+        {
+            throw new IOException($"{failedDeletes} artwork cache files are currently locked and could not be removed.");
+        }
+
+        DiagnosticsService.Log("Artwork cache cleared.");
         return Task.CompletedTask;
+    }
+
+    public bool IsArtworkCached(string artworkPath, string cacheKey)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(artworkPath))
+            {
+                return false;
+            }
+
+            artworkPath = artworkPath.Trim();
+            if (Path.IsPathRooted(artworkPath) && File.Exists(artworkPath))
+            {
+                return new FileInfo(artworkPath).Length > 0;
+            }
+
+            string filePath = GetCachedFilePath(artworkPath, cacheKey);
+            return File.Exists(filePath) && new FileInfo(filePath).Length > 0;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public async Task<StorageFile?> RefreshArtworkFileAsync(
+        string artworkPath,
+        string cacheKey,
+        bool forceRefresh,
+        CancellationToken cancellationToken = default)
+    {
+        if (forceRefresh && !string.IsNullOrWhiteSpace(artworkPath))
+        {
+            InvalidateCachedArtwork(artworkPath.Trim(), cacheKey);
+        }
+
+        return await GetArtworkFileAsync(artworkPath, cacheKey, cancellationToken);
+    }
+
+    public async Task<ArtworkCacheVerificationResult> VerifyCacheAsync(
+        CancellationToken cancellationToken = default)
+    {
+        _memoryCache.Clear();
+        string folderPath = GetCacheFolderPath();
+        int validFiles = 0;
+        int removedFiles = 0;
+        int missingMarkers = 0;
+
+        foreach (string filePath in Directory.EnumerateFiles(folderPath))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (filePath.EndsWith(MissingMarkerExtension, StringComparison.OrdinalIgnoreCase))
+            {
+                if (IsNegativeCacheActive(filePath))
+                {
+                    missingMarkers++;
+                }
+                else if (!File.Exists(filePath))
+                {
+                    removedFiles++;
+                }
+
+                continue;
+            }
+
+            if (filePath.EndsWith(".tmp", StringComparison.OrdinalIgnoreCase))
+            {
+                if (TryDeleteFile(filePath))
+                {
+                    removedFiles++;
+                }
+
+                continue;
+            }
+
+            try
+            {
+                StorageFile file = await StorageFile.GetFileFromPathAsync(filePath);
+                using Windows.Storage.Streams.IRandomAccessStreamWithContentType stream = await file.OpenReadAsync();
+                BitmapDecoder decoder = await BitmapDecoder.CreateAsync(stream);
+                if (decoder.PixelWidth == 0 || decoder.PixelHeight == 0)
+                {
+                    throw new InvalidDataException("The cached image has no dimensions.");
+                }
+
+                validFiles++;
+            }
+            catch
+            {
+                if (TryDeleteFile(filePath))
+                {
+                    removedFiles++;
+                }
+            }
+        }
+
+        DiagnosticsService.Log(
+            $"Artwork cache verification finished. Valid={validFiles}; Removed={removedFiles}; " +
+            $"MissingMarkers={missingMarkers}.");
+        return new ArtworkCacheVerificationResult(validFiles, removedFiles, missingMarkers);
+    }
+
+    private void InvalidateCachedArtwork(string artworkPath, string cacheKey)
+    {
+        if (Path.IsPathRooted(artworkPath) && File.Exists(artworkPath))
+        {
+            return;
+        }
+
+        string filePath = GetCachedFilePath(artworkPath, cacheKey);
+        _memoryCache.TryRemove(filePath, out _);
+        TryDeleteFile(filePath);
+        TryDeleteFile(filePath + MissingMarkerExtension);
+    }
+
+    private static string GetCachedFilePath(string artworkPath, string cacheKey)
+    {
+        string key = BuildCacheKey(artworkPath, cacheKey);
+        return Path.Combine(GetCacheFolderPath(), CreateFileName(key));
     }
 
     private async Task<StorageFile?> DownloadAndCacheAsync(
@@ -430,7 +562,7 @@ public sealed class ArtworkService
         }
     }
 
-    private static void TryDeleteFile(string filePath)
+    private static bool TryDeleteFile(string filePath)
     {
         try
         {
@@ -438,10 +570,13 @@ public sealed class ArtworkService
             {
                 File.Delete(filePath);
             }
+
+            return !File.Exists(filePath);
         }
         catch
         {
             // Cache files are disposable and may occasionally be locked by the image decoder.
+            return false;
         }
     }
 

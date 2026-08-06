@@ -79,8 +79,13 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <InfoBar x:Name="StatusInfoBar" IsOpen="False" IsClosable="True" />
-            <ProgressRing x:Name="MetadataProgressRing" Grid.Column="1" Width="28" Height="28"
-                          IsActive="False" Visibility="Collapsed" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10"
+                        VerticalAlignment="Center">
+                <ProgressBar x:Name="MetadataProgressBar" Width="240" Minimum="0" Maximum="1"
+                             Value="0" Visibility="Collapsed" />
+                <ProgressRing x:Name="MetadataProgressRing" Width="28" Height="28"
+                              IsActive="False" Visibility="Collapsed" />
+            </StackPanel>
         </Grid>
 
         <Grid Grid.Row="3">
