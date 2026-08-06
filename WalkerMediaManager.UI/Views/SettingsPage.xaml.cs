@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -24,6 +25,7 @@ public sealed partial class SettingsPage : Page
     private readonly PlexTVSyncService _plexTVSyncService = new();
     private readonly ArtworkMaintenanceService _artworkMaintenanceService = new();
     private bool _artworkMaintenanceRunning;
+    private CancellationTokenSource? _artworkMaintenanceCts;
 
     public ObservableCollection<PlexLibrarySection> Libraries { get; } = [];
     public ObservableCollection<PlexLibrarySection> MovieLibraries { get; } = [];
@@ -33,6 +35,7 @@ public sealed partial class SettingsPage : Page
     {
         InitializeComponent();
         Loaded += SettingsPage_Loaded;
+        Unloaded += (_, _) => _artworkMaintenanceCts?.Cancel();
     }
 
     private void SettingsPage_Loaded(
@@ -387,7 +390,8 @@ public sealed partial class SettingsPage : Page
             return;
         }
 
-        SetArtworkMaintenanceBusy(true, indeterminate: false);
+        _artworkMaintenanceCts = new CancellationTokenSource();
+        SetArtworkMaintenanceBusy(true, indeterminate: false, allowCancellation: true);
         ArtworkMaintenanceProgressText.Text = refreshAll
             ? "Preparing to refresh all posters..."
             : "Checking for uncached posters...";
@@ -403,13 +407,21 @@ public sealed partial class SettingsPage : Page
         {
             ArtworkMaintenanceResult result = await _artworkMaintenanceService.RefreshPostersAsync(
                 refreshAll,
-                progress);
+                progress,
+                _artworkMaintenanceCts.Token);
             ArtworkMaintenanceProgressText.Text = "Artwork refresh complete.";
             ShowArtworkMaintenanceMessage(
                 result.Summary,
                 result.FailedCount > 0 || result.MissingSourceCount > 0
                     ? InfoBarSeverity.Warning
                     : InfoBarSeverity.Success);
+        }
+        catch (OperationCanceledException)
+        {
+            ArtworkMaintenanceProgressText.Text = "Artwork refresh canceled.";
+            ShowArtworkMaintenanceMessage(
+                "Artwork refresh was canceled. Posters completed before cancellation remain safely cached.",
+                InfoBarSeverity.Informational);
         }
         catch (Exception exception)
         {
@@ -420,7 +432,9 @@ public sealed partial class SettingsPage : Page
         }
         finally
         {
-            SetArtworkMaintenanceBusy(false, indeterminate: false);
+            _artworkMaintenanceCts.Dispose();
+            _artworkMaintenanceCts = null;
+            SetArtworkMaintenanceBusy(false, indeterminate: false, allowCancellation: false);
         }
     }
 
@@ -431,16 +445,25 @@ public sealed partial class SettingsPage : Page
             return;
         }
 
-        SetArtworkMaintenanceBusy(true, indeterminate: true);
+        _artworkMaintenanceCts = new CancellationTokenSource();
+        SetArtworkMaintenanceBusy(true, indeterminate: true, allowCancellation: true);
         ArtworkMaintenanceProgressText.Text = "Verifying cached artwork files...";
 
         try
         {
-            ArtworkCacheVerificationResult result = await ArtworkService.Current.VerifyCacheAsync();
+            ArtworkCacheVerificationResult result = await ArtworkService.Current.VerifyCacheAsync(
+                _artworkMaintenanceCts.Token);
             ArtworkMaintenanceProgressText.Text = "Artwork cache verification complete.";
             ShowArtworkMaintenanceMessage(
                 result.Summary,
                 result.RemovedFiles > 0 ? InfoBarSeverity.Warning : InfoBarSeverity.Success);
+        }
+        catch (OperationCanceledException)
+        {
+            ArtworkMaintenanceProgressText.Text = "Artwork cache verification canceled.";
+            ShowArtworkMaintenanceMessage(
+                "Artwork cache verification was canceled. Files already checked remain unchanged.",
+                InfoBarSeverity.Informational);
         }
         catch (Exception exception)
         {
@@ -451,7 +474,9 @@ public sealed partial class SettingsPage : Page
         }
         finally
         {
-            SetArtworkMaintenanceBusy(false, indeterminate: false);
+            _artworkMaintenanceCts.Dispose();
+            _artworkMaintenanceCts = null;
+            SetArtworkMaintenanceBusy(false, indeterminate: false, allowCancellation: false);
         }
     }
 
@@ -465,7 +490,7 @@ public sealed partial class SettingsPage : Page
             return;
         }
 
-        SetArtworkMaintenanceBusy(true, indeterminate: true);
+        SetArtworkMaintenanceBusy(true, indeterminate: true, allowCancellation: false);
         ArtworkMaintenanceProgressText.Text = "Clearing the artwork cache...";
 
         try
@@ -485,8 +510,15 @@ public sealed partial class SettingsPage : Page
         }
         finally
         {
-            SetArtworkMaintenanceBusy(false, indeterminate: false);
+            SetArtworkMaintenanceBusy(false, indeterminate: false, allowCancellation: false);
         }
+    }
+
+    private void CancelArtworkMaintenanceButton_Click(object sender, RoutedEventArgs e)
+    {
+        CancelArtworkMaintenanceButton.IsEnabled = false;
+        ArtworkMaintenanceProgressText.Text = "Canceling after the current file...";
+        _artworkMaintenanceCts?.Cancel();
     }
 
     private async Task<bool> ConfirmArtworkActionAsync(
@@ -608,6 +640,7 @@ public sealed partial class SettingsPage : Page
         ConnectionProgressRing.IsActive = isBusy;
         ConnectionProgressRing.Visibility =
             isBusy ? Visibility.Visible : Visibility.Collapsed;
+        SetArtworkMaintenanceButtonsEnabled(!isBusy && !_artworkMaintenanceRunning);
     }
 
     private void SetMovieSyncBusy(bool isBusy)
@@ -622,6 +655,7 @@ public sealed partial class SettingsPage : Page
         MovieSyncProgressRing.IsActive = isBusy;
         MovieSyncProgressRing.Visibility =
             isBusy ? Visibility.Visible : Visibility.Collapsed;
+        SetArtworkMaintenanceButtonsEnabled(!isBusy && !_artworkMaintenanceRunning);
     }
 
     private void SetSlideshowSyncBusy(bool isBusy)
@@ -630,6 +664,7 @@ public sealed partial class SettingsPage : Page
         SlideshowSyncProgressRing.IsActive = isBusy;
         SlideshowSyncProgressRing.Visibility =
             isBusy ? Visibility.Visible : Visibility.Collapsed;
+        SetArtworkMaintenanceButtonsEnabled(!isBusy && !_artworkMaintenanceRunning);
     }
 
     private void ShowSlideshowSyncMessage(
@@ -653,15 +688,26 @@ public sealed partial class SettingsPage : Page
         TVSyncProgressRing.IsActive = isBusy;
         TVSyncProgressRing.Visibility =
             isBusy ? Visibility.Visible : Visibility.Collapsed;
+        SetArtworkMaintenanceButtonsEnabled(!isBusy && !_artworkMaintenanceRunning);
     }
 
-    private void SetArtworkMaintenanceBusy(bool isBusy, bool indeterminate)
+    private void SetArtworkMaintenanceBusy(
+        bool isBusy,
+        bool indeterminate,
+        bool allowCancellation)
     {
         _artworkMaintenanceRunning = isBusy;
-        RefreshMissingPostersButton.IsEnabled = !isBusy;
-        RefreshAllPostersButton.IsEnabled = !isBusy;
-        VerifyArtworkCacheButton.IsEnabled = !isBusy;
-        ClearArtworkCacheButton.IsEnabled = !isBusy;
+        SetArtworkMaintenanceButtonsEnabled(!isBusy);
+        TestConnectionButton.IsEnabled = !isBusy;
+        SaveSettingsButton.IsEnabled = !isBusy;
+        ServerUrlBox.IsEnabled = !isBusy;
+        TokenBox.IsEnabled = !isBusy;
+        SyncMoviesButton.IsEnabled = !isBusy && MovieLibraries.Count > 0;
+        SyncSlideshowsButton.IsEnabled = !isBusy && MovieLibraries.Count > 0;
+        SyncTVShowsButton.IsEnabled = !isBusy && TVLibraries.Count > 0;
+        MovieLibraryComboBox.IsEnabled = !isBusy;
+        SlideshowLibraryComboBox.IsEnabled = !isBusy;
+        TVLibraryComboBox.IsEnabled = !isBusy;
         ArtworkMaintenanceProgressBar.IsIndeterminate = isBusy && indeterminate;
         ArtworkMaintenanceProgressBar.Visibility = isBusy
             ? Visibility.Visible
@@ -672,6 +718,19 @@ public sealed partial class SettingsPage : Page
             ArtworkMaintenanceProgressBar.Value = 0;
             ArtworkMaintenanceProgressBar.Maximum = 1;
         }
+
+        CancelArtworkMaintenanceButton.IsEnabled = isBusy && allowCancellation;
+        CancelArtworkMaintenanceButton.Visibility = isBusy && allowCancellation
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+    }
+
+    private void SetArtworkMaintenanceButtonsEnabled(bool isEnabled)
+    {
+        RefreshMissingPostersButton.IsEnabled = isEnabled;
+        RefreshAllPostersButton.IsEnabled = isEnabled;
+        VerifyArtworkCacheButton.IsEnabled = isEnabled;
+        ClearArtworkCacheButton.IsEnabled = isEnabled;
     }
 
     private void ShowArtworkMaintenanceMessage(string message, InfoBarSeverity severity)

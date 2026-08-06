@@ -214,6 +214,7 @@ public sealed class ArtworkService
     public async Task<ArtworkCacheVerificationResult> VerifyCacheAsync(
         CancellationToken cancellationToken = default)
     {
+        Stopwatch stopwatch = Stopwatch.StartNew();
         _memoryCache.Clear();
         string folderPath = GetCacheFolderPath();
         int validFiles = 0;
@@ -269,10 +270,15 @@ public sealed class ArtworkService
             }
         }
 
+        stopwatch.Stop();
         DiagnosticsService.Log(
             $"Artwork cache verification finished. Valid={validFiles}; Removed={removedFiles}; " +
-            $"MissingMarkers={missingMarkers}.");
-        return new ArtworkCacheVerificationResult(validFiles, removedFiles, missingMarkers);
+            $"MissingMarkers={missingMarkers}; Elapsed={stopwatch.Elapsed:hh\\:mm\\:ss}.");
+        return new ArtworkCacheVerificationResult(
+            validFiles,
+            removedFiles,
+            missingMarkers,
+            stopwatch.Elapsed);
     }
 
     private void InvalidateCachedArtwork(string artworkPath, string cacheKey)

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,6 +19,7 @@ public sealed class ArtworkMaintenanceService
         IProgress<ArtworkMaintenanceProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
+        Stopwatch stopwatch = Stopwatch.StartNew();
         List<ArtworkItem> items = [];
         items.AddRange((await _movieRepository.GetAllAsync()).Select(movie => new ArtworkItem(
             "Movie",
@@ -103,6 +105,8 @@ public sealed class ArtworkMaintenanceService
             }
         }
 
+        stopwatch.Stop();
+        result.Elapsed = stopwatch.Elapsed;
         DiagnosticsService.Log($"Artwork maintenance finished. {result.Summary}");
         return result;
     }

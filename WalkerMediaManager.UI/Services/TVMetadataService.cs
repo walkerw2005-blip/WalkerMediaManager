@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -27,6 +28,7 @@ public sealed class TVMetadataService
         IProgress<TVMetadataProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
+        Stopwatch stopwatch = Stopwatch.StartNew();
         List<TVShow> shows = await _repository.GetAllAsync();
         TVMetadataSyncResult result = new();
 
@@ -130,6 +132,8 @@ public sealed class TVMetadataService
             }
         }
 
+        stopwatch.Stop();
+        result.Elapsed = stopwatch.Elapsed;
         result.DiagnosticsReportPath = WriteDiagnosticsReport(result.Diagnostics);
         DiagnosticsService.Log($"TV metadata refresh finished. {result.Summary}");
         return result;

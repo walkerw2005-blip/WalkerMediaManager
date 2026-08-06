@@ -123,6 +123,13 @@
                         Value="0"
                         Visibility="Collapsed" />
 
+                    <Button
+                        x:Name="CancelArtworkMaintenanceButton"
+                        Content="Cancel"
+                        HorizontalAlignment="Left"
+                        Visibility="Collapsed"
+                        Click="CancelArtworkMaintenanceButton_Click" />
+
                     <TextBlock
                         x:Name="ArtworkMaintenanceProgressText"
                         TextWrapping="Wrap"

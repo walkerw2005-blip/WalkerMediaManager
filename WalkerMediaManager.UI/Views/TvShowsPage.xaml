@@ -68,7 +68,7 @@
                         VerticalAlignment="Bottom" Click="RefreshMetadataButton_Click" />
                 <ToggleButton x:Name="GridViewToggle" Grid.Column="4" Content="Grid" IsChecked="True"
                               VerticalAlignment="Bottom" Click="GridViewToggle_Click" />
-                <Button Grid.Column="5" Content="Add TV Show" VerticalAlignment="Bottom"
+                <Button x:Name="AddTVShowButton" Grid.Column="5" Content="Add TV Show" VerticalAlignment="Bottom"
                         Click="ShowEditorButton_Click" />
             </Grid>
         </Border>
@@ -85,6 +85,8 @@
                              Value="0" Visibility="Collapsed" />
                 <ProgressRing x:Name="MetadataProgressRing" Width="28" Height="28"
                               IsActive="False" Visibility="Collapsed" />
+                <Button x:Name="CancelMetadataRefreshButton" Content="Cancel"
+                        Visibility="Collapsed" Click="CancelMetadataRefreshButton_Click" />
             </StackPanel>
         </Grid>
 

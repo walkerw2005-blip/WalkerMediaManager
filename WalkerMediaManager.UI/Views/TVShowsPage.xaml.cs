@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -18,6 +19,7 @@ public sealed partial class TvShowsPage : Page
     private readonly List<TVShow> _allShows = [];
     private TVShow? _showBeingEdited;
     private bool _isLoading;
+    private CancellationTokenSource? _metadataRefreshCts;
 
     public ObservableCollection<TVShow> DisplayShows { get; } = [];
 
@@ -25,6 +27,7 @@ public sealed partial class TvShowsPage : Page
     {
         InitializeComponent();
         Loaded += TvShowsPage_Loaded;
+        Unloaded += (_, _) => _metadataRefreshCts?.Cancel();
     }
 
     private async void TvShowsPage_Loaded(object sender, RoutedEventArgs e)
@@ -165,12 +168,8 @@ public sealed partial class TvShowsPage : Page
         }
 
         _isLoading = true;
-        RefreshMetadataButton.IsEnabled = false;
-        MetadataProgressRing.IsActive = true;
-        MetadataProgressRing.Visibility = Visibility.Visible;
-        MetadataProgressBar.Value = 0;
-        MetadataProgressBar.Maximum = 1;
-        MetadataProgressBar.Visibility = Visibility.Visible;
+        _metadataRefreshCts = new CancellationTokenSource();
+        SetMetadataRefreshBusy(true);
 
         Progress<TVMetadataProgress> progress = new(update =>
         {
@@ -184,7 +183,9 @@ public sealed partial class TvShowsPage : Page
 
         try
         {
-            TVMetadataSyncResult result = await _tvMetadataService.RefreshAllAsync(progress);
+            TVMetadataSyncResult result = await _tvMetadataService.RefreshAllAsync(
+                progress,
+                _metadataRefreshCts.Token);
             await RefreshShowsAsync();
             ShowStatus($"TV metadata refresh finished. {result.Summary}",
                 result.FailedCount == 0 &&
@@ -193,6 +194,12 @@ public sealed partial class TvShowsPage : Page
                     ? InfoBarSeverity.Success
                     : InfoBarSeverity.Warning);
         }
+        catch (OperationCanceledException)
+        {
+            ShowStatus(
+                "TV metadata refresh was canceled. Shows completed before cancellation were saved.",
+                InfoBarSeverity.Informational);
+        }
         catch (Exception exception)
         {
             DiagnosticsService.LogException("TV metadata refresh failed.", exception);
@@ -200,11 +207,41 @@ public sealed partial class TvShowsPage : Page
         }
         finally
         {
-            MetadataProgressRing.IsActive = false;
-            MetadataProgressRing.Visibility = Visibility.Collapsed;
-            MetadataProgressBar.Visibility = Visibility.Collapsed;
-            RefreshMetadataButton.IsEnabled = true;
+            _metadataRefreshCts.Dispose();
+            _metadataRefreshCts = null;
+            SetMetadataRefreshBusy(false);
             _isLoading = false;
+        }
+    }
+
+    private void CancelMetadataRefreshButton_Click(object sender, RoutedEventArgs e)
+    {
+        CancelMetadataRefreshButton.IsEnabled = false;
+        StatusInfoBar.Message = "Canceling after the current request...";
+        _metadataRefreshCts?.Cancel();
+    }
+
+    private void SetMetadataRefreshBusy(bool isBusy)
+    {
+        RefreshMetadataButton.IsEnabled = !isBusy;
+        SearchBox.IsEnabled = !isBusy;
+        FilterComboBox.IsEnabled = !isBusy;
+        SortComboBox.IsEnabled = !isBusy;
+        GridViewToggle.IsEnabled = !isBusy;
+        AddTVShowButton.IsEnabled = !isBusy;
+        ShowGridView.IsEnabled = !isBusy;
+        ShowListView.IsEnabled = !isBusy;
+
+        MetadataProgressRing.IsActive = isBusy;
+        MetadataProgressRing.Visibility = isBusy ? Visibility.Visible : Visibility.Collapsed;
+        MetadataProgressBar.Visibility = isBusy ? Visibility.Visible : Visibility.Collapsed;
+        CancelMetadataRefreshButton.IsEnabled = isBusy;
+        CancelMetadataRefreshButton.Visibility = isBusy ? Visibility.Visible : Visibility.Collapsed;
+
+        if (isBusy)
+        {
+            MetadataProgressBar.Value = 0;
+            MetadataProgressBar.Maximum = 1;
         }
     }
 
