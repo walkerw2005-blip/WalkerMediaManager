@@ -190,6 +190,8 @@ public sealed class PlexTVSyncService
                 Episodes = CASE WHEN $episodes > 0 THEN $episodes ELSE Episodes END,
                 PlexRatingKey = CASE WHEN TRIM($plexRatingKey) <> '' THEN $plexRatingKey ELSE PlexRatingKey END,
                 PlexGuid = CASE WHEN TRIM($plexGuid) <> '' THEN $plexGuid ELSE PlexGuid END,
+                TMDbId = CASE WHEN $tmdbId IS NOT NULL THEN $tmdbId ELSE TMDbId END,
+                IMDbId = CASE WHEN TRIM($imdbId) <> '' THEN $imdbId ELSE IMDbId END,
                 Studio = CASE WHEN TRIM($studio) <> '' THEN $studio ELSE Studio END,
                 Summary = CASE WHEN TRIM($summary) <> '' THEN $summary ELSE Summary END,
                 PosterPath = CASE WHEN TRIM($posterPath) <> '' THEN $posterPath ELSE PosterPath END,
@@ -237,8 +239,8 @@ public sealed class PlexTVSyncService
                 $episodes,
                 $plexRatingKey,
                 $plexGuid,
-                NULL,
-                '',
+                $tmdbId,
+                $imdbId,
                 $studio,
                 $summary,
                 $posterPath,
@@ -261,6 +263,8 @@ public sealed class PlexTVSyncService
         command.Parameters.AddWithValue("$episodes", show.Episodes);
         command.Parameters.AddWithValue("$plexRatingKey", show.PlexRatingKey);
         command.Parameters.AddWithValue("$plexGuid", show.PlexGuid);
+        command.Parameters.AddWithValue("$tmdbId", show.TMDbId.HasValue ? show.TMDbId.Value : DBNull.Value);
+        command.Parameters.AddWithValue("$imdbId", show.IMDbId);
         command.Parameters.AddWithValue("$studio", show.Studio);
         command.Parameters.AddWithValue("$summary", show.Summary);
         command.Parameters.AddWithValue("$posterPath", show.PosterPath);

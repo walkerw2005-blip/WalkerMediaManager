@@ -10,8 +10,8 @@
 
   <Identity
     Name="f80b5ea5-7b84-47d8-a442-f7aa8fcf99e7"
-    Publisher="CN=JWOK"
-    Version="1.0.0.0" />
+    Publisher="CN=Walker Software"
+    Version="1.1.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="f80b5ea5-7b84-47d8-a442-f7aa8fcf99e7" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 

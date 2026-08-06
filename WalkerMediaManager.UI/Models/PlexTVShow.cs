@@ -6,6 +6,10 @@ public sealed class PlexTVShow
 
     public string PlexGuid { get; set; } = string.Empty;
 
+    public int? TMDbId { get; set; }
+
+    public string IMDbId { get; set; } = string.Empty;
+
     public string Title { get; set; } = string.Empty;
 
     public int Year { get; set; }

@@ -411,6 +411,8 @@ public sealed class PlexService
         int.TryParse(element.Attribute("year")?.Value, out int year);
         int seasons = ParseIntAttribute(element, "childCount");
         int episodes = ParseIntAttribute(element, "leafCount");
+        string tmdbId = FindExternalGuid(element, "tmdb");
+        int.TryParse(tmdbId, out int parsedTmdbId);
 
         return new PlexTVShow
         {
@@ -419,6 +421,8 @@ public sealed class PlexService
                 ?? string.Empty,
             PlexGuid = element.Attribute("guid")?.Value
                 ?? string.Empty,
+            TMDbId = parsedTmdbId > 0 ? parsedTmdbId : null,
+            IMDbId = FindExternalGuid(element, "imdb"),
             Title = element.Attribute("title")?.Value
                 ?? string.Empty,
             Year = year,
@@ -433,6 +437,25 @@ public sealed class PlexService
             BackgroundPath = element.Attribute("art")?.Value
                 ?? string.Empty
         };
+    }
+
+    private static string FindExternalGuid(XElement element, string provider)
+    {
+        string prefix = provider + "://";
+        string? value = element
+            .Elements("Guid")
+            .Select(item => item.Attribute("id")?.Value ?? string.Empty)
+            .FirstOrDefault(id => id.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            string primaryGuid = element.Attribute("guid")?.Value ?? string.Empty;
+            value = primaryGuid.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+                ? primaryGuid
+                : string.Empty;
+        }
+
+        return string.IsNullOrWhiteSpace(value) ? string.Empty : value[prefix.Length..];
     }
 
     private static int ParseIntAttribute(

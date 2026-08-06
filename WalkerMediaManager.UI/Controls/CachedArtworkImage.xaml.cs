@@ -139,7 +139,7 @@ public sealed partial class CachedArtworkImage : UserControl
 
         try
         {
-            StorageFile? file = await ArtworkCacheService.Current.GetArtworkFileAsync(
+            StorageFile? file = await ArtworkService.Current.GetArtworkFileAsync(
                 ArtworkPath,
                 CacheKey,
                 token);

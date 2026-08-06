@@ -182,7 +182,11 @@ public sealed partial class TvShowsPage : Page
             TVMetadataSyncResult result = await _tvMetadataService.RefreshAllAsync(progress);
             await RefreshShowsAsync();
             ShowStatus($"TV metadata refresh finished. {result.Summary}",
-                result.FailedCount == 0 ? InfoBarSeverity.Success : InfoBarSeverity.Warning);
+                result.FailedCount == 0 &&
+                result.NotFoundCount == 0 &&
+                result.PosterMissingCount == 0
+                    ? InfoBarSeverity.Success
+                    : InfoBarSeverity.Warning);
         }
         catch (Exception exception)
         {
